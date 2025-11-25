@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { UserRole, Prisma } from '@prisma/client';
+import { UserRole, Prisma } from '@prisma/client/index-browser';
 import type { Faculty } from '@prisma/client';
 import type { PaginatedResult } from '../../common/pagination/pagination.dto.js';
 import type { CreateFacultyDto } from '../dto/create-faculty.dto.js';
