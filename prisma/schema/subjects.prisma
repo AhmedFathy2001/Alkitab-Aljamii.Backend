@@ -1,0 +1,36 @@
+model Subject {
+  id          String    @id @default(uuid())
+  facultyId   String    @map("faculty_id")
+  name        String
+  code        String
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  faculty     Faculty                 @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  assignments UserSubjectAssignment[]
+  contents    Content[]
+
+  @@unique([facultyId, code])
+  @@index([facultyId])
+  @@map("subjects")
+}
+
+model UserSubjectAssignment {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  subjectId     String   @map("subject_id")
+  roleInSubject String   @map("role_in_subject")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subjectId])
+  @@index([userId])
+  @@index([subjectId])
+  @@map("user_subject_assignments")
+}

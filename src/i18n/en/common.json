@@ -1,0 +1,53 @@
+{
+  "errors": {
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access denied",
+    "not_found": "Resource not found",
+    "bad_request": "Invalid request",
+    "conflict": "Resource already exists",
+    "internal_error": "Internal server error",
+    "validation_failed": "Validation failed"
+  },
+  "auth": {
+    "invalid_credentials": "Invalid email or password",
+    "invalid_token": "Invalid or expired token",
+    "user_inactive": "User account is inactive",
+    "user_not_found": "User not found",
+    "logout_success": "Successfully logged out",
+    "token_expired": "Token has expired",
+    "refresh_token_invalid": "Invalid or expired refresh token"
+  },
+  "users": {
+    "email_exists": "Email already registered",
+    "not_found": "User not found",
+    "already_deleted": "User is already deleted",
+    "not_deleted": "User is not deleted",
+    "created": "User created successfully",
+    "updated": "User updated successfully",
+    "deleted": "User deleted successfully",
+    "restored": "User restored successfully"
+  },
+  "faculties": {
+    "not_found": "Faculty not found",
+    "code_exists": "Faculty code already exists",
+    "created": "Faculty created successfully",
+    "updated": "Faculty updated successfully",
+    "deleted": "Faculty deleted successfully"
+  },
+  "subjects": {
+    "not_found": "Subject not found",
+    "code_exists": "Subject code already exists in this faculty",
+    "created": "Subject created successfully",
+    "updated": "Subject updated successfully",
+    "deleted": "Subject deleted successfully"
+  },
+  "content": {
+    "not_found": "Content not found",
+    "upload_failed": "Failed to upload content",
+    "pending_approval": "Content pending approval",
+    "approved": "Content approved successfully",
+    "rejected": "Content rejected",
+    "deleted": "Content deleted successfully",
+    "access_denied": "You do not have access to this content"
+  }
+}

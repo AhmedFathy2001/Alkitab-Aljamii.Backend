@@ -1,0 +1,104 @@
+graph TB
+    subgraph "API Layer"
+        Gateway[API Gateway]
+        Auth[Auth Middleware]
+        
+        subgraph "Auth Routes"
+            A1[POST /auth/login]
+            A2[POST /auth/refresh]
+            A3[POST /auth/logout]
+        end
+        
+        subgraph "User Routes"
+            U1[POST /users]
+            U2[GET /users]
+            U3[GET /users/:id]
+            U4[PUT /users/:id]
+            U5[DELETE /users/:id]
+            U6[POST /users/bulk]
+            U7[POST /users/:id/reset-password]
+        end
+        
+        subgraph "Faculty Routes"
+            F1[POST /faculties]
+            F2[GET /faculties]
+            F3[GET /faculties/:id]
+            F4[PUT /faculties/:id]
+            F5[POST /faculties/:id/professors]
+            F6[DELETE /faculties/:id/professors/:id]
+            F7[POST /faculties/:id/students]
+            F8[GET /faculties/:id/students]
+        end
+        
+        subgraph "Content Routes"
+            C1[POST /contents/upload]
+            C2[GET /contents]
+            C3[GET /contents/:id]
+            C4[PUT /contents/:id/approve]
+            C5[PUT /contents/:id/reject]
+            C6[GET /contents/:id/stream]
+            C7[DELETE /contents/:id]
+        end
+    end
+    
+    subgraph "Service Layer"
+        UserService[User Service]
+        FacultyService[Faculty Service]
+        ContentService[Content Service]
+        FileService[File Service]
+    end
+    
+    subgraph "Storage Layer"
+        MinIO[MinIO Storage]
+        PostgreSQL[(PostgreSQL DB)]
+    end
+    
+    Gateway --> Auth
+    Auth --> A1
+    Auth --> U1
+    Auth --> F1
+    Auth --> C1
+    
+    A1 --> UserService
+    U1 --> UserService
+    U2 --> UserService
+    U3 --> UserService
+    U4 --> UserService
+    U5 --> UserService
+    U6 --> UserService
+    U7 --> UserService
+    
+    F1 --> FacultyService
+    F2 --> FacultyService
+    F3 --> FacultyService
+    F4 --> FacultyService
+    F5 --> FacultyService
+    F6 --> FacultyService
+    F7 --> FacultyService
+    F8 --> FacultyService
+    
+    C1 --> ContentService
+    C2 --> ContentService
+    C3 --> ContentService
+    C4 --> ContentService
+    C5 --> ContentService
+    C6 --> ContentService
+    C7 --> ContentService
+    
+    C1 --> FileService
+    C6 --> FileService
+    C7 --> FileService
+    
+    UserService --> PostgreSQL
+    FacultyService --> PostgreSQL
+    ContentService --> PostgreSQL
+    FileService --> MinIO
+    
+    style Gateway fill:#3b82f6,stroke:#60a5fa,color:#fff
+    style Auth fill:#ef4444,stroke:#f87171,color:#fff
+    style MinIO fill:#10b981,stroke:#34d399,color:#fff
+    style PostgreSQL fill:#8b5cf6,stroke:#a78bfa,color:#fff
+    style UserService fill:#f59e0b,stroke:#fbbf24,color:#fff
+    style FacultyService fill:#f59e0b,stroke:#fbbf24,color:#fff
+    style ContentService fill:#f59e0b,stroke:#fbbf24,color:#fff
+    style FileService fill:#f59e0b,stroke:#fbbf24,color:#fff

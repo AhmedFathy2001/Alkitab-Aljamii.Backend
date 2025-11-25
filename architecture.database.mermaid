@@ -1,0 +1,132 @@
+erDiagram
+    %% User Relations
+    USERS ||--o{ REFRESH_TOKENS : has
+    USERS ||--o{ FACULTY_PROFESSORS : teaches_in
+    USERS ||--o{ FACULTY_STUDENTS : enrolled_in
+    USERS ||--o{ USER_SUBJECT_ASSIGNMENTS : assigned_to
+    USERS ||--o{ CONTENTS : uploads
+    USERS ||--o{ CONTENT_APPROVALS : approves
+    USERS ||--o{ CONTENT_ACCESS_LOGS : accesses
+
+    %% Faculty Relations
+    FACULTIES |o--|| USERS : has_admin
+    FACULTIES ||--o{ FACULTY_PROFESSORS : has_professors
+    FACULTIES ||--o{ FACULTY_STUDENTS : has_students
+    FACULTIES ||--o{ SUBJECTS : contains
+
+    %% Subject Relations
+    SUBJECTS ||--o{ USER_SUBJECT_ASSIGNMENTS : has_members
+    SUBJECTS ||--o{ CONTENTS : has_content
+
+    %% Content Relations
+    CONTENTS ||--o{ CONTENT_APPROVALS : has_approval_history
+    CONTENTS ||--o{ CONTENT_ACCESS_LOGS : is_accessed
+
+    USERS {
+        uuid id PK
+        string email UK
+        string password_hash
+        string first_name
+        string last_name
+        string role "super_admin|faculty_admin|professor|student"
+        boolean is_active
+        timestamp last_login
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    REFRESH_TOKENS {
+        uuid id PK
+        uuid user_id FK
+        string token_hash
+        timestamp expires_at
+        boolean is_revoked
+        string device_info
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    FACULTIES {
+        uuid id PK
+        string name
+        string code UK
+        string description
+        uuid admin_id FK
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    FACULTY_PROFESSORS {
+        uuid faculty_id PK
+        uuid professor_id PK
+        timestamp created_at
+    }
+
+    FACULTY_STUDENTS {
+        uuid faculty_id FK
+        uuid student_id PK
+        timestamp created_at
+    }
+
+    SUBJECTS {
+        uuid id PK
+        uuid faculty_id FK
+        string name
+        string code
+        string description
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USER_SUBJECT_ASSIGNMENTS {
+        uuid id PK
+        uuid user_id FK
+        uuid subject_id FK
+        string role_in_subject
+        timestamp created_at
+    }
+
+    CONTENTS {
+        uuid id PK
+        uuid subject_id FK
+        uuid uploaded_by FK
+        string title
+        string description
+        string file_path
+        string file_name
+        string mime_type
+        string content_type
+        bigint file_size
+        string status
+        string rejection_reason
+        uuid approved_by FK
+        timestamp approved_at
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    CONTENT_APPROVALS {
+        uuid id PK
+        uuid content_id FK
+        uuid reviewed_by FK
+        string action
+        string notes
+        timestamp created_at
+    }
+
+    CONTENT_ACCESS_LOGS {
+        uuid id PK
+        uuid content_id FK
+        uuid accessed_by FK
+        string action
+        string ip_address
+        string user_agent
+        int duration_seconds
+        timestamp accessed_at
+    }

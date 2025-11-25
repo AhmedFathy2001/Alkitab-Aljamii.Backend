@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  super_admin
+  faculty_admin
+  professor
+  student
+}
+
+enum ContentStatus {
+  pending
+  approved
+  rejected
+}
+
+enum ContentType {
+  lecture
+  assignment
+  resource
+  exam
+  other
+}
+
+enum ApprovalAction {
+  approved
+  rejected
+  revision_requested
+}
+
+enum AccessAction {
+  view
+  stream
+  download
+}

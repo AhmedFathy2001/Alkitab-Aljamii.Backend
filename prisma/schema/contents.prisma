@@ -1,0 +1,68 @@
+model Content {
+  id              String        @id @default(uuid())
+  subjectId       String        @map("subject_id")
+  uploadedById    String        @map("uploaded_by")
+  title           String
+  description     String?
+  filePath        String        @map("file_path")
+  fileName        String        @map("file_name")
+  mimeType        String        @map("mime_type")
+  contentType     ContentType   @map("content_type")
+  fileSize        BigInt        @map("file_size")
+  status          ContentStatus @default(pending)
+  rejectionReason String?       @map("rejection_reason")
+  approvedById    String?       @map("approved_by")
+  approvedAt      DateTime?     @map("approved_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  deletedAt       DateTime?     @map("deleted_at")
+
+  // Relations
+  subject    Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  uploadedBy User               @relation("UploadedBy", fields: [uploadedById], references: [id])
+  approvedBy User?              @relation("ApprovedBy", fields: [approvedById], references: [id])
+  approvals  ContentApproval[]
+  accessLogs ContentAccessLog[]
+
+  @@index([subjectId])
+  @@index([uploadedById])
+  @@index([status])
+  @@map("contents")
+}
+
+model ContentApproval {
+  id         String         @id @default(uuid())
+  contentId  String         @map("content_id")
+  reviewedBy String         @map("reviewed_by")
+  action     ApprovalAction
+  notes      String?
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  content  Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  reviewer User    @relation(fields: [reviewedBy], references: [id])
+
+  @@index([contentId])
+  @@index([reviewedBy])
+  @@map("content_approvals")
+}
+
+model ContentAccessLog {
+  id              String       @id @default(uuid())
+  contentId       String       @map("content_id")
+  accessedById    String       @map("accessed_by")
+  action          AccessAction
+  ipAddress       String?      @map("ip_address")
+  userAgent       String?      @map("user_agent")
+  durationSeconds Int?         @map("duration_seconds")
+  accessedAt      DateTime     @default(now()) @map("accessed_at")
+
+  // Relations
+  content    Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  accessedBy User    @relation(fields: [accessedById], references: [id])
+
+  @@index([contentId])
+  @@index([accessedById])
+  @@index([accessedAt])
+  @@map("content_access_logs")
+}
