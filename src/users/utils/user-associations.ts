@@ -36,14 +36,14 @@ export async function getUserAssociationsData(
   });
 
   return {
-    faculties: facultyRoles.map((fr) => ({
+    faculties: facultyRoles.map((fr: { faculty: { id: any; nameEn: any; nameAr: any; code: any; }; role: any; }) => ({
       id: fr.faculty.id,
       nameEn: fr.faculty.nameEn,
       nameAr: fr.faculty.nameAr,
       code: fr.faculty.code,
       role: fr.role,
     })),
-    subjects: subjectAssignments.map((sa) => ({
+    subjects: subjectAssignments.map((sa: { subject: { id: any; nameEn: any; nameAr: any; code: any; faculty: { nameEn: any; nameAr: any; }; }; }) => ({
       id: sa.subject.id,
       nameEn: sa.subject.nameEn,
       nameAr: sa.subject.nameAr,
@@ -67,7 +67,7 @@ export async function getMyFacultiesData(
       select: { id: true, nameEn: true, nameAr: true, code: true },
       orderBy: { nameEn: 'asc' },
     });
-    return allFaculties.map((f) => ({
+    return allFaculties.map((f: any) => ({
       ...f,
       role: 'faculty_admin' as const,
     }));
@@ -87,7 +87,7 @@ export async function getMyFacultiesData(
     orderBy: { faculty: { nameEn: 'asc' } },
   });
 
-  return facultyRoles.map((fr) => ({
+  return facultyRoles.map((fr: { faculty: { id: any; nameEn: any; nameAr: any; code: any; }; role: any; }) => ({
     id: fr.faculty.id,
     nameEn: fr.faculty.nameEn,
     nameAr: fr.faculty.nameAr,
@@ -115,7 +115,7 @@ export async function getAvailableViewsData(
     orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
   });
 
-  const availableViews: AvailableView[] = facultyRoles.map((fr) => ({
+  const availableViews: AvailableView[] = facultyRoles.map((fr: { role: string; facultyId: any; faculty: { nameEn: any; nameAr: any; }; }) => ({
     role: fr.role as ViewRole,
     facultyId: fr.facultyId,
     facultyNameEn: fr.faculty.nameEn,
@@ -126,10 +126,10 @@ export async function getAvailableViewsData(
   let primaryFacultyId: string | undefined;
 
   const firstFacultyAdmin = facultyRoles.find(
-    (fr) => fr.role === 'faculty_admin',
+    (fr: { role: string; }) => fr.role === 'faculty_admin',
   );
-  const firstProfessor = facultyRoles.find((fr) => fr.role === 'professor');
-  const firstStudent = facultyRoles.find((fr) => fr.role === 'student');
+  const firstProfessor = facultyRoles.find((fr: { role: string; }) => fr.role === 'professor');
+  const firstStudent = facultyRoles.find((fr: { role: string; }) => fr.role === 'student');
 
   if (firstFacultyAdmin) {
     primaryRole = 'faculty_admin';

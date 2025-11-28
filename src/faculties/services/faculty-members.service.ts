@@ -91,7 +91,7 @@ export class FacultyMembersService {
 
     // Create new user
     const passwordHash = await bcrypt.hash(dto.password, 10);
-    const result = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx: { user: { create: (arg0: { data: { email: string; firstName: string; lastName: string; passwordHash: string; isActive: boolean; }; }) => any; }; userFacultyRole: { create: (arg0: { data: { userId: any; facultyId: string; role: "professor" | "student"; }; }) => any; }; }) => {
       const user = await tx.user.create({
         data: {
           email: dto.email.toLowerCase().trim(),
@@ -216,7 +216,7 @@ export class FacultyMembersService {
       orderBy: { createdAt: 'asc' },
     });
 
-    return roles.map((r) => mapToFacultyMemberDto(r.user, r.createdAt));
+    return roles.map((r: { user: { id: string; email: string; firstName: string; lastName: string; isActive: boolean; }; createdAt: Date; }) => mapToFacultyMemberDto(r.user, r.createdAt));
   }
 
   async addFacultyAdmin(

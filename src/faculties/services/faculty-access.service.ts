@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { Prisma } from '@prisma/client';
-import type { Faculty } from '@prisma/client';
+import { Prisma } from '@prisma/client/index-browser';
+import type { Faculty } from '@prisma/client/index-browser';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class FacultyAccessService {
       select: { facultyId: true },
     });
 
-    const facultyIds = userFacultyRoles.map((r) => r.facultyId);
+    const facultyIds = userFacultyRoles.map((r: { facultyId: any; }) => r.facultyId);
 
     if (facultyIds.length === 0) {
       return { id: 'none' }; // No access to any faculty

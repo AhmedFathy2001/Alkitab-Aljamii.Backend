@@ -70,7 +70,7 @@ export class FacultyService {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      items: faculties.map((f) => toFacultyResponseDto(f)),
+      items: faculties.map((f: { description: string | null; id: string; name: string; isActive: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; code: string; }) => toFacultyResponseDto(f)),
       meta: {
         total,
         page,

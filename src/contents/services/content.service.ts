@@ -117,7 +117,7 @@ export class ContentService {
         where: { userId },
         select: { subjectId: true },
       });
-      const enrolledSubjectIds = assignments.map((a) => a.subjectId);
+      const enrolledSubjectIds = assignments.map((a: { subjectId: any; }) => a.subjectId);
 
       if (subjectId) {
         if (!enrolledSubjectIds.includes(subjectId))
@@ -136,7 +136,7 @@ export class ContentService {
       },
     });
 
-    const mappedContents = contents.map((c) => ({
+    const mappedContents = contents.map((c: { subject: { nameEn: any; nameAr: any; }; }) => ({
       ...c,
       subject: { name: `${c.subject.nameEn} / ${c.subject.nameAr}` },
     }));
@@ -277,7 +277,7 @@ export class ContentService {
     this.prisma.content
       .update({ where: { id }, data: { pageCount } })
       .then(() => this.logger.log(`Stored page count ${pageCount} for content ${id}`))
-      .catch((err) => this.logger.warn(`Failed to store page count for ${id}: ${err}`));
+      .catch((err: any) => this.logger.warn(`Failed to store page count for ${id}: ${err}`));
 
     return {
       totalPages: pageCount,

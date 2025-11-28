@@ -63,7 +63,7 @@ export class SubjectService {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      items: subjects.map((s) => this.toResponse(s)),
+      items: subjects.map((s: any) => this.toResponse(s)),
       meta: {
         total,
         page,
@@ -218,7 +218,7 @@ export class SubjectService {
         select: { subjectId: true },
       });
 
-      where['id'] = { in: assignments.map((a) => a.subjectId) };
+      where['id'] = { in: assignments.map((a: { subjectId: any; }) => a.subjectId) };
       return where;
     }
 
@@ -235,8 +235,8 @@ export class SubjectService {
       });
 
       where['OR'] = [
-        { facultyId: { in: adminRoles.map((r) => r.facultyId) } },
-        { id: { in: assignments.map((a) => a.subjectId) } },
+        { facultyId: { in: adminRoles.map((r: { facultyId: any; }) => r.facultyId) } },
+        { id: { in: assignments.map((a: { subjectId: any; }) => a.subjectId) } },
       ];
 
       return where;
@@ -249,7 +249,7 @@ export class SubjectService {
         select: { subjectId: true },
       });
 
-      where['id'] = { in: assignments.map((a) => a.subjectId) };
+      where['id'] = { in: assignments.map((a: { subjectId: any; }) => a.subjectId) };
     }
 
     return where;

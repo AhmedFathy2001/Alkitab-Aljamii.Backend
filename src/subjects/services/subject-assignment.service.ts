@@ -29,7 +29,7 @@ export class SubjectAssignmentService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const items = assignments.map((a) => ({
+    const items = assignments.map((a: { id: any; user: { id: any; firstName: any; lastName: any; email: any; }; roleInSubject: any; createdAt: any; }) => ({
       id: a.id,
       userId: a.user.id,
       firstName: a.user.firstName,

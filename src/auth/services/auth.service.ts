@@ -68,7 +68,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         isSuperAdmin: user.isSuperAdmin,
-        facultyRoles: facultyRoles.map((fr) => ({
+        facultyRoles: facultyRoles.map((fr: { facultyId: any; faculty: { nameEn: any; nameAr: any; }; role: any; }) => ({
           facultyId: fr.facultyId,
           nameEn: fr.faculty.nameEn ?? '',  
           nameAr: fr.faculty.nameAr ?? '', 

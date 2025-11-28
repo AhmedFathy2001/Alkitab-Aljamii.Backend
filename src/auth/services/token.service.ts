@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { RefreshToken } from '@prisma/client/index-browser';
 import type { JwtConfig } from '../../config/configuration.js';
@@ -207,3 +206,7 @@ export class TokenService {
     }
   }
 }
+function uuidv4() {
+  throw new Error('Function not implemented.');
+}
+

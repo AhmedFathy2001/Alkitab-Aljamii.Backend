@@ -1,7 +1,7 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { Prisma } from '@prisma/client';
-import type { User } from '@prisma/client';
+import { Prisma } from '@prisma/client/extension';
+import type { User } from '@prisma/client/index-browser';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
 import {
   buildSuperAdminFilter,

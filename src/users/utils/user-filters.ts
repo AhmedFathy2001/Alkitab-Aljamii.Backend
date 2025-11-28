@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from "@prisma/client/extension";
 
 export function buildSuperAdminFilter(
   facultyId?: string,

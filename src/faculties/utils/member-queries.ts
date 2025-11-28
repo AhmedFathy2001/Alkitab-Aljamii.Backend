@@ -1,5 +1,5 @@
 import type { PrismaService } from '../../prisma/prisma.service.js';
-import type { FacultyRole } from '@prisma/client';
+import type { FacultyRole } from '@prisma/client/index-browser';
 import type { PaginatedResult } from '../../common/pagination/pagination.dto.js';
 import type { FacultyMemberDto } from '../services/faculty-members.service.js';
 
@@ -61,7 +61,7 @@ export async function queryFacultyMembers(
   const totalPages = Math.ceil(total / limit);
 
   return {
-    items: roles.map((r) => ({
+    items: roles.map((r: { user: { id: any; email: any; firstName: any; lastName: any; isActive: any; }; createdAt: any; }) => ({
       id: r.user.id,
       email: r.user.email,
       firstName: r.user.firstName,

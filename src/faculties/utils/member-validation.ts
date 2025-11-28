@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { PrismaService } from '../../prisma/prisma.service.js';
-import type { FacultyRole } from '@prisma/client';
+import type { FacultyRole } from '@prisma/client/index-browser';
 
 export interface UserWithRoles {
   id: string;
