@@ -16,7 +16,14 @@ import {
 import { AuthService } from '../services/auth.service.js';
 import { LoginDto } from '../dto/login.dto.js';
 import { RefreshTokenDto } from '../dto/refresh-token.dto.js';
-import { AuthResponseDto, TokensResponseDto } from '../dto/auth-response.dto.js';
+import {
+  AuthResponseDto,
+  TokensResponseDto,
+} from '../dto/auth-response.dto.js';
+import {
+  SwitchContextDto,
+  SwitchContextResponseDto,
+} from '../dto/switch-context.dto.js';
 import { Public } from '../../common/decorators/public.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
@@ -54,15 +61,9 @@ export class AuthController {
     type: TokensResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async refresh(
-    @Body() dto: RefreshTokenDto,
-    @CurrentUser('sub') userId: string,
-  ): Promise<TokensResponseDto> {
-    // For refresh, we need to decode the token to get userId
-    // Since refresh endpoint is public, we'll need to validate differently
-    // This is a simplified version - in production, you might want to
-    // store userId with the refresh token or use a different approach
-    return this.authService.refresh(userId, dto.refreshToken);
+  async refresh(@Body() dto: RefreshTokenDto): Promise<TokensResponseDto> {
+    // Find the refresh token in DB to get the associated userId
+    return this.authService.refresh(dto.refreshToken);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -77,5 +78,30 @@ export class AuthController {
     @Body() dto: RefreshTokenDto,
   ): Promise<void> {
     await this.authService.logout(user.sub, dto.refreshToken);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('switch-context')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Switch view/faculty context',
+    description: 'Get a new access token scoped to a specific view and faculty',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Context switched successfully',
+    type: SwitchContextResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - no access to requested context',
+  })
+  async switchContext(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: SwitchContextDto,
+  ): Promise<SwitchContextResponseDto> {
+    return this.authService.switchContext(user, dto);
   }
 }

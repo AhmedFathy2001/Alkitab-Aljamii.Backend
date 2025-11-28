@@ -26,7 +26,8 @@ export class TokenService {
   async generateTokens(
     userId: string,
     email: string,
-    role: string,
+    isSuperAdmin: boolean,
+    context?: { activeView?: string; facultyId?: string },
   ): Promise<{
     accessToken: string;
     refreshToken: string;
@@ -40,13 +41,22 @@ export class TokenService {
       this.jwtConfig.refreshExpiresIn,
     );
 
-    const accessToken = await this.jwtService.signAsync(
-      { sub: userId, email, role },
-      {
-        secret: this.jwtConfig.accessSecret,
-        expiresIn: expiresInSeconds,
-      },
-    );
+    const payload: Record<string, unknown> = {
+      sub: userId,
+      email,
+      isSuperAdmin,
+    };
+    if (context?.activeView) {
+      payload['activeView'] = context.activeView;
+    }
+    if (context?.facultyId) {
+      payload['facultyId'] = context.facultyId;
+    }
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: this.jwtConfig.accessSecret,
+      expiresIn: expiresInSeconds,
+    });
 
     const refreshToken = uuidv4();
 
@@ -56,6 +66,36 @@ export class TokenService {
       expiresIn: expiresInSeconds,
       refreshExpiresIn: refreshExpiresInSeconds,
     };
+  }
+
+  async generateAccessTokenOnly(
+    userId: string,
+    email: string,
+    isSuperAdmin: boolean,
+    context?: { activeView?: string; facultyId?: string },
+  ): Promise<{ accessToken: string; expiresIn: number }> {
+    const expiresInSeconds = this.parseExpiryToSeconds(
+      this.jwtConfig.accessExpiresIn,
+    );
+
+    const payload: Record<string, unknown> = {
+      sub: userId,
+      email,
+      isSuperAdmin,
+    };
+    if (context?.activeView) {
+      payload['activeView'] = context.activeView;
+    }
+    if (context?.facultyId) {
+      payload['facultyId'] = context.facultyId;
+    }
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: this.jwtConfig.accessSecret,
+      expiresIn: expiresInSeconds,
+    });
+
+    return { accessToken, expiresIn: expiresInSeconds };
   }
 
   async saveRefreshToken(
@@ -87,6 +127,31 @@ export class TokenService {
     for (const storedToken of tokens) {
       const isValid = await bcrypt.compare(token, storedToken.tokenHash);
       if (isValid && storedToken.expiresAt > new Date()) {
+        return storedToken;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Find and validate a refresh token without knowing the userId.
+   * Used for the public refresh endpoint.
+   */
+  async findAndValidateRefreshToken(
+    token: string,
+  ): Promise<RefreshToken | null> {
+    // Get all non-revoked, non-expired tokens
+    const tokens = await this.prisma.refreshToken.findMany({
+      where: {
+        isRevoked: false,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    for (const storedToken of tokens) {
+      const isValid = await bcrypt.compare(token, storedToken.tokenHash);
+      if (isValid) {
         return storedToken;
       }
     }
@@ -129,11 +194,16 @@ export class TokenService {
     const unit = match[2];
 
     switch (unit) {
-      case 's': return value;
-      case 'm': return value * 60;
-      case 'h': return value * 60 * 60;
-      case 'd': return value * 24 * 60 * 60;
-      default: throw new Error(`Invalid expiry unit: ${unit}`);
+      case 's':
+        return value;
+      case 'm':
+        return value * 60;
+      case 'h':
+        return value * 60 * 60;
+      case 'd':
+        return value * 24 * 60 * 60;
+      default:
+        throw new Error(`Invalid expiry unit: ${unit}`);
     }
   }
 }

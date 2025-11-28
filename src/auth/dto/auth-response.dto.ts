@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRole } from '@prisma/client';
+import { FacultyRole } from '@prisma/client';
+
+export class FacultyRoleDto {
+  @ApiProperty()
+  facultyId!: string;
+
+  @ApiProperty()
+  facultyName!: string;
+
+  @ApiProperty({ enum: FacultyRole })
+  role!: FacultyRole;
+}
 
 export class UserInfoDto {
   @ApiProperty()
@@ -14,8 +25,11 @@ export class UserInfoDto {
   @ApiProperty()
   lastName!: string;
 
-  @ApiProperty({ enum: UserRole })
-  role!: UserRole;
+  @ApiProperty()
+  isSuperAdmin!: boolean;
+
+  @ApiProperty({ type: [FacultyRoleDto] })
+  facultyRoles!: FacultyRoleDto[];
 }
 
 export class AuthResponseDto {
@@ -31,7 +45,10 @@ export class AuthResponseDto {
   @ApiProperty({ example: 900, description: 'Access token expiry in seconds' })
   expiresIn!: number;
 
-  @ApiProperty({ example: 604800, description: 'Refresh token expiry in seconds' })
+  @ApiProperty({
+    example: 604800,
+    description: 'Refresh token expiry in seconds',
+  })
   refreshExpiresIn!: number;
 }
 
@@ -45,6 +62,9 @@ export class TokensResponseDto {
   @ApiProperty({ example: 900, description: 'Access token expiry in seconds' })
   expiresIn!: number;
 
-  @ApiProperty({ example: 604800, description: 'Refresh token expiry in seconds' })
+  @ApiProperty({
+    example: 604800,
+    description: 'Refresh token expiry in seconds',
+  })
   refreshExpiresIn!: number;
 }

@@ -51,7 +51,6 @@ temp/
 
 # Uploads (local development)
 uploads/
-storage/
 
 # Docker
 docker-compose.override.yml

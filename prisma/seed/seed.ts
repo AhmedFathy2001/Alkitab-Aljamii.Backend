@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 import pg from 'pg';
@@ -20,7 +20,7 @@ interface SeedUser {
   password: string;
   firstName: string;
   lastName: string;
-  role: UserRole;
+  isSuperAdmin: boolean;
 }
 
 const superAdmin: SeedUser = {
@@ -28,7 +28,7 @@ const superAdmin: SeedUser = {
   password: 'Admin@123',
   firstName: 'Super',
   lastName: 'Admin',
-  role: 'super_admin',
+  isSuperAdmin: true,
 };
 
 async function seed(): Promise<void> {
@@ -52,14 +52,14 @@ async function seed(): Promise<void> {
           passwordHash,
           firstName: superAdmin.firstName,
           lastName: superAdmin.lastName,
-          role: superAdmin.role,
+          isSuperAdmin: superAdmin.isSuperAdmin,
         },
       });
 
       console.log('✅ Super admin created:');
       console.log(`   Email:    ${superAdmin.email}`);
       console.log(`   Password: ${superAdmin.password}`);
-      console.log(`   Role:     ${superAdmin.role}\n`);
+      console.log(`   Type:     Super Admin\n`);
     }
 
     console.log('🎉 Seed completed successfully!\n');

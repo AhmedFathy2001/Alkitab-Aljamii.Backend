@@ -70,6 +70,14 @@ src/
 │   ├── controllers/
 │   ├── dto/
 │   └── services/
+├── contents/                # Content management module
+│   ├── controllers/
+│   ├── dto/
+│   └── services/
+│       ├── content.service.ts
+│       ├── content-access.service.ts
+│       ├── pdf-pages.service.ts      # Chunked PDF extraction
+│       └── pdf-watermark.service.ts  # Watermark application
 ├── common/                  # Shared utilities
 │   ├── decorators/          # @CurrentUser, @Roles, @Public
 │   ├── enums/               # UserRole enum
@@ -137,6 +145,58 @@ prisma/
 | `subjectId` | Filter by subject/course |
 | `page` | Page number (default: 1) |
 | `limit` | Items per page (default: 10, max: 100) |
+
+### Contents
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/contents/upload` | Upload content (PDF) | Professor, Admin |
+| GET | `/contents` | List contents | Authenticated |
+| GET | `/contents/:id` | Get content by ID | Authenticated |
+| PUT | `/contents/:id/approve` | Approve content | Faculty Admin, Super Admin |
+| PUT | `/contents/:id/reject` | Reject content | Faculty Admin, Super Admin |
+| GET | `/contents/:id/stream` | Stream full PDF (watermarked) | Authenticated |
+| GET | `/contents/:id/pages` | Get PDF chunk (paginated) | Authenticated |
+| GET | `/contents/:id/page-count` | Get total page count | Authenticated |
+| DELETE | `/contents/:id` | Delete content | Faculty Admin, Super Admin |
+
+**Query Parameters for GET /contents/:id/pages:**
+| Param | Description |
+|-------|-------------|
+| `start` | Start page index (0-indexed, default: 0) |
+| `count` | Number of pages to fetch (default: 15) |
+
+**Response Headers for /contents/:id/pages:**
+| Header | Description |
+|--------|-------------|
+| `X-Total-Pages` | Total pages in the PDF |
+| `X-Start-Page` | Start page of this chunk |
+| `X-End-Page` | End page of this chunk |
+| `X-Has-More` | Whether more pages exist |
+
+## PDF Security Features
+
+The system implements multiple layers of protection for PDF content:
+
+### Chunked Streaming
+- PDFs are never sent in full; only 15-page chunks are transmitted at a time
+- Users cannot download/reconstruct the complete book
+- Frontend prefetches chunks intelligently based on reading direction
+
+### Watermarking
+- Every PDF chunk is watermarked with the user's name and email
+- Watermark is applied server-side before transmission
+- Helps trace leaked content back to the source
+
+### Page Count Caching
+- Page count is calculated once during upload and stored in database
+- For existing content, calculated on first access and cached
+- Subsequent requests return instantly from database
+
+### Access Control
+- Permission checks on every request
+- Quota enforcement for students (configurable daily limits)
+- Access logging for audit trails
 
 ## Role-Based Access Control
 
@@ -277,26 +337,36 @@ Default: English
   - [x] English translations
   - [x] Arabic translations
 
+- [x] **Faculties Module**
+  - [x] CRUD operations
+  - [x] Assign faculty admin
+  - [x] Manage professors/students (add/remove/list)
+  - [x] `/users/me/faculties` - Get user's accessible faculties
+
+- [x] **Contents Module**
+  - [x] Content upload (to MinIO)
+  - [x] Content approval/rejection workflow
+  - [x] Stream/download endpoint (`GET /contents/:id/stream`)
+  - [x] Permission-based access control
+  - [x] **PDF Chunked Streaming** (security feature)
+    - [x] Page-by-page streaming (`GET /contents/:id/pages?start=0&count=15`)
+    - [x] Page count endpoint (`GET /contents/:id/page-count`)
+    - [x] Automatic watermarking with user info on each chunk
+    - [x] Page count cached in database for instant response
+
+- [x] **Subjects Module**
+  - [x] CRUD operations
+  - [x] User-Subject assignments (assign/remove users)
+  - [x] Role-based access filtering
+
 ### TODO
-
-- [ ] **Faculties Module**
-  - [ ] CRUD operations
-  - [ ] Assign faculty admin
-  - [ ] Manage professors/students
-
-- [ ] **Subjects Module**
-  - [ ] CRUD operations
-  - [ ] User-Subject assignments
-
-- [ ] **Contents Module**
-  - [ ] Content upload (to MinIO)
-  - [ ] Content approval/rejection workflow
-  - [ ] Stream-only access for students
-  - [ ] Access logging
 
 - [ ] **Testing**
   - [ ] Unit tests for services
   - [ ] E2E tests for endpoints
+
+- [ ] **Access Logging**
+  - [ ] Content access logging for audit trail
 
 ---
 
@@ -315,7 +385,7 @@ See `architecture.database.mermaid` for the full ERD.
 | `faculty_students` | Student-faculty assignments (M:N) |
 | `subjects` | Subjects within faculties |
 | `user_subject_assignments` | User-subject relationships |
-| `contents` | Uploaded educational content |
+| `contents` | Uploaded educational content (includes `page_count` for PDFs) |
 | `content_approvals` | Approval history |
 | `content_access_logs` | Access audit trail |
 

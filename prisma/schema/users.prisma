@@ -4,7 +4,7 @@ model User {
   passwordHash String    @map("password_hash")
   firstName    String    @map("first_name")
   lastName     String    @map("last_name")
-  role         UserRole
+  isSuperAdmin Boolean   @default(false) @map("is_super_admin")
   isActive     Boolean   @default(true) @map("is_active")
   lastLogin    DateTime? @map("last_login")
   createdAt    DateTime  @default(now()) @map("created_at")
@@ -12,17 +12,45 @@ model User {
   deletedAt    DateTime? @map("deleted_at")
 
   // Relations
-  refreshTokens          RefreshToken[]
-  facultiesAsAdmin       Faculty[]              @relation("FacultyAdmin")
-  facultyProfessors      FacultyProfessor[]
-  facultyStudents        FacultyStudent[]
-  subjectAssignments     UserSubjectAssignment[]
-  uploadedContents       Content[]              @relation("UploadedBy")
-  approvedContents       Content[]              @relation("ApprovedBy")
-  contentApprovals       ContentApproval[]
-  contentAccessLogs      ContentAccessLog[]
+  refreshTokens      RefreshToken[]
+  facultyRoles       UserFacultyRole[]
+  subjectAssignments UserSubjectAssignment[]
+  uploadedContents   Content[]               @relation("UploadedBy")
+  approvedContents   Content[]               @relation("ApprovedBy")
+  contentApprovals   ContentApproval[]
+  contentAccessLogs  ContentAccessLog[]
 
   @@map("users")
+}
+
+// Faculty-scoped role assignment
+// DB-level constraints:
+// - @@unique([userId, facultyId, role]): Same user can't have same role twice in same faculty
+//
+// Application-level constraints (enforced in services):
+// - Super admins (isSuperAdmin=true) cannot have any UserFacultyRole entries
+// - Only ONE faculty_admin role per user (can admin only 1 faculty)
+// - Only ONE faculty_admin per faculty (no two admins for same faculty)
+// - Only ONE student role per user (students belong to 1 faculty only)
+// - Students cannot have other roles (faculty_admin or professor)
+// - Professor role can be in multiple faculties
+// - A user can be both faculty_admin AND professor (in same or different faculties)
+model UserFacultyRole {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  facultyId String      @map("faculty_id")
+  role      FacultyRole
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  faculty Faculty @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+
+  // Each user can have only one instance of each role per faculty
+  @@unique([userId, facultyId, role])
+  @@index([userId])
+  @@index([facultyId])
+  @@map("user_faculty_roles")
 }
 
 model RefreshToken {

@@ -3,46 +3,14 @@ model Faculty {
   name        String
   code        String    @unique
   description String?
-  adminId     String?   @map("admin_id")
   isActive    Boolean   @default(true) @map("is_active")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
   // Relations
-  admin      User?              @relation("FacultyAdmin", fields: [adminId], references: [id])
-  professors FacultyProfessor[]
-  students   FacultyStudent[]
-  subjects   Subject[]
+  facultyRoles UserFacultyRole[]
+  subjects     Subject[]
 
-  @@index([adminId])
   @@map("faculties")
-}
-
-model FacultyProfessor {
-  facultyId   String   @map("faculty_id")
-  professorId String   @map("professor_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // Relations
-  faculty   Faculty @relation(fields: [facultyId], references: [id], onDelete: Cascade)
-  professor User    @relation(fields: [professorId], references: [id], onDelete: Cascade)
-
-  @@id([facultyId, professorId])
-  @@index([professorId])
-  @@map("faculty_professors")
-}
-
-model FacultyStudent {
-  facultyId String   @map("faculty_id")
-  studentId String   @map("student_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  // Relations
-  faculty Faculty @relation(fields: [facultyId], references: [id], onDelete: Cascade)
-  student User    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@id([facultyId, studentId])
-  @@index([studentId])
-  @@map("faculty_students")
 }

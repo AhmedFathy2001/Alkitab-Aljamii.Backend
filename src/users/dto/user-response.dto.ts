@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole } from '@prisma/client';
+import { FacultyRole } from '@prisma/client';
+
+export class UserFacultyRoleDto {
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
+  facultyId!: string;
+
+  @ApiProperty({ example: 'Faculty of Engineering' })
+  facultyName!: string;
+
+  @ApiProperty({ enum: FacultyRole, example: 'professor' })
+  role!: FacultyRole;
+}
 
 export class UserResponseDto {
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
@@ -14,8 +25,11 @@ export class UserResponseDto {
   @ApiProperty({ example: 'Doe' })
   lastName!: string;
 
-  @ApiProperty({ enum: UserRole, example: 'student' })
-  role!: UserRole;
+  @ApiProperty({ example: false })
+  isSuperAdmin!: boolean;
+
+  @ApiPropertyOptional({ type: [UserFacultyRoleDto] })
+  facultyRoles?: UserFacultyRoleDto[] | undefined;
 
   @ApiProperty({ example: true })
   isActive!: boolean;

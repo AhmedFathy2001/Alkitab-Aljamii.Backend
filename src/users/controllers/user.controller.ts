@@ -17,8 +17,15 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { UserService } from '../services/user.service.js';
+import type {
+  UserFacultyDto,
+  UserAssociationsDto,
+  AvailableViewsDto,
+  EmailCheckResultDto,
+} from '../dto/user-associations.dto.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
 import { CreateUserDto } from '../dto/create-user.dto.js';
@@ -45,6 +52,52 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMe(@CurrentUser() user: JwtPayload): Promise<UserResponseDto> {
     return this.userService.findOne(user.sub, user);
+  }
+
+  @Get('me/faculties')
+  @ApiOperation({ summary: 'Get faculties accessible to current user' })
+  @ApiQuery({
+    name: 'view',
+    required: false,
+    description:
+      'Filter by active view role (faculty_admin, professor, student)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of faculties user has access to',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMyFaculties(
+    @CurrentUser() user: JwtPayload,
+    @Query('view') view?: string,
+  ): Promise<UserFacultyDto[]> {
+    return this.userService.getMyFaculties(user, view);
+  }
+
+  @Get('me/available-views')
+  @ApiOperation({ summary: 'Get available view roles for current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Available views the user can switch between',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getAvailableViews(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<AvailableViewsDto> {
+    return this.userService.getAvailableViews(user);
+  }
+
+  @Get('check-email')
+  @ApiOperation({ summary: 'Check if email exists and get basic user info' })
+  @ApiResponse({
+    status: 200,
+    description: 'Email check result',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async checkEmail(
+    @Query('email') email: string,
+  ): Promise<EmailCheckResultDto> {
+    return this.userService.checkEmailExists(email);
   }
 
   @Post()
@@ -106,6 +159,25 @@ export class UserController {
     @CurrentUser() user: JwtPayload,
   ): Promise<UserResponseDto> {
     return this.userService.findOne(id, user);
+  }
+
+  @Get(':id/associations')
+  @ApiOperation({
+    summary: 'Get user faculty and subject associations (super admin only)',
+  })
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  @ApiResponse({
+    status: 200,
+    description: 'User associations',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserAssociations(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<UserAssociationsDto> {
+    return this.userService.getUserAssociations(id, user);
   }
 
   @Patch(':id')

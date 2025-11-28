@@ -71,7 +71,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return {
         status,
         message: (responseObj['message'] as string) ?? 'An error occurred',
-        error: (responseObj['error'] as string) ?? HttpStatus[status] ?? 'Error',
+        error:
+          (responseObj['error'] as string) ?? HttpStatus[status] ?? 'Error',
         details: responseObj['details'],
       };
     }

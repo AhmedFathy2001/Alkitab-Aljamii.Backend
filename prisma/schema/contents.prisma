@@ -9,6 +9,7 @@ model Content {
   mimeType        String        @map("mime_type")
   contentType     ContentType   @map("content_type")
   fileSize        BigInt        @map("file_size")
+  pageCount       Int?          @map("page_count")
   status          ContentStatus @default(pending)
   rejectionReason String?       @map("rejection_reason")
   approvedById    String?       @map("approved_by")

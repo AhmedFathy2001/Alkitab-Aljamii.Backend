@@ -6,8 +6,8 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserRole {
-  super_admin
+// Faculty-scoped roles (used in UserFacultyRole)
+enum FacultyRole {
   faculty_admin
   professor
   student
@@ -20,10 +20,10 @@ enum ContentStatus {
 }
 
 enum ContentType {
-  lecture
-  assignment
-  resource
-  exam
+  textbook
+  reference
+  notes
+  guide
   other
 }
 

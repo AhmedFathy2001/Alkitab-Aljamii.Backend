@@ -4,3 +4,4 @@ export * from './guards/index.js';
 export * from './filters/index.js';
 export * from './interceptors/index.js';
 export * from './pagination/index.js';
+export * from './services/index.js';

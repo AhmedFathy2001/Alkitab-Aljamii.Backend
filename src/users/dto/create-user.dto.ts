@@ -1,24 +1,28 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsString,
   MinLength,
   MaxLength,
   Matches,
+  IsBoolean,
+  IsOptional,
 } from 'class-validator';
-import { UserRole } from '@prisma/client';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'user@example.com', description: 'User email address' })
+  @ApiProperty({
+    example: 'user@example.com',
+    description: 'User email address',
+  })
   @IsEmail()
   @IsNotEmpty()
   email!: string;
 
   @ApiProperty({
     example: 'Password@123',
-    description: 'Password (min 8 chars, must contain uppercase, lowercase, and number)',
+    description:
+      'Password (min 8 chars, must contain uppercase, lowercase, and number)',
     minLength: 8,
     maxLength: 128,
   })
@@ -30,19 +34,32 @@ export class CreateUserDto {
   })
   password!: string;
 
-  @ApiProperty({ example: 'John', description: 'User first name', maxLength: 100 })
+  @ApiProperty({
+    example: 'John',
+    description: 'User first name',
+    maxLength: 100,
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
   firstName!: string;
 
-  @ApiProperty({ example: 'Doe', description: 'User last name', maxLength: 100 })
+  @ApiProperty({
+    example: 'Doe',
+    description: 'User last name',
+    maxLength: 100,
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
   lastName!: string;
 
-  @ApiProperty({ enum: UserRole, example: 'student', description: 'User role' })
-  @IsEnum(UserRole)
-  role!: UserRole;
+  @ApiPropertyOptional({
+    example: false,
+    description:
+      'Whether user is a super admin (only super admins can set this)',
+  })
+  @IsBoolean()
+  @IsOptional()
+  isSuperAdmin?: boolean;
 }

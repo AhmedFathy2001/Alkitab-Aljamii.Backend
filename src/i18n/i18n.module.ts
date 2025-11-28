@@ -1,5 +1,9 @@
 import { Module, Global } from '@nestjs/common';
-import { I18nModule, AcceptLanguageResolver, HeaderResolver } from 'nestjs-i18n';
+import {
+  I18nModule,
+  AcceptLanguageResolver,
+  HeaderResolver,
+} from 'nestjs-i18n';
 import { join } from 'path';
 
 @Global()
@@ -15,10 +19,7 @@ import { join } from 'path';
         path: join(__dirname, '/'),
         watch: process.env['NODE_ENV'] === 'development',
       },
-      resolvers: [
-        new HeaderResolver(['x-lang', 'accept-language']),
-        AcceptLanguageResolver,
-      ],
+      resolvers: [new HeaderResolver(['x-lang']), AcceptLanguageResolver],
     }),
   ],
   exports: [I18nModule],
