@@ -6,8 +6,8 @@ import {
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { TokenService } from './token.service.js';
-import type { User } from '@prisma/client';
 import type { LoginDto } from '../dto/login.dto.js';
+import { User } from '@prisma/client/index-browser';
 import type {
   AuthResponseDto,
   TokensResponseDto,
@@ -31,7 +31,7 @@ export class AuthService {
     // Get user's faculty roles for initial context
     const facultyRoles = await this.prisma.userFacultyRole.findMany({
       where: { userId: user.id },
-      include: { faculty: { select: { id: true, name: true } } },
+      include: { faculty: { select: { id: true, nameEn: true, nameAr: true } } },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -70,9 +70,11 @@ export class AuthService {
         isSuperAdmin: user.isSuperAdmin,
         facultyRoles: facultyRoles.map((fr) => ({
           facultyId: fr.facultyId,
-          facultyName: fr.faculty.name,
+          nameEn: fr.faculty.nameEn ?? '',  
+          nameAr: fr.faculty.nameAr ?? '', 
           role: fr.role,
         })),
+        
       },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -82,7 +84,6 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string): Promise<TokensResponseDto> {
-    // Find the token and its owner without relying on JWT
     const storedToken =
       await this.tokenService.findAndValidateRefreshToken(refreshToken);
 
@@ -141,14 +142,12 @@ export class AuthService {
   ): Promise<SwitchContextResponseDto> {
     const userId = currentUser.sub;
 
-    // Super admin cannot switch context
     if (currentUser.isSuperAdmin) {
       throw new ForbiddenException(
         'Super admin does not use context switching',
       );
     }
 
-    // Validate user has this role in the specified faculty
     const facultyRole = await this.prisma.userFacultyRole.findFirst({
       where: {
         userId,
@@ -163,7 +162,6 @@ export class AuthService {
       );
     }
 
-    // Check faculty is active
     const faculty = await this.prisma.faculty.findFirst({
       where: { id: dto.facultyId, isActive: true, deletedAt: null },
     });
@@ -171,13 +169,11 @@ export class AuthService {
       throw new ForbiddenException('Faculty is not active');
     }
 
-    // Get user details for token
     const user = await this.prisma.user.findFirstOrThrow({
       where: { id: userId, isActive: true, deletedAt: null },
       select: { id: true, email: true, isSuperAdmin: true },
     });
 
-    // Generate new access token with context
     const context = {
       activeView: dto.activeView,
       facultyId: dto.facultyId,

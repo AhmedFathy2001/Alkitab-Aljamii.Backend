@@ -2,8 +2,17 @@ model Content {
   id              String        @id @default(uuid())
   subjectId       String        @map("subject_id")
   uploadedById    String        @map("uploaded_by")
-  title           String
+
+  // Localization fields
+  titleEn         String
+  titleAr         String
+  descriptionEn   String?       @map("description_en")
+  descriptionAr   String?       @map("description_ar")
+
+  // Old fields (optional, can remove later if not needed)
+  title           String?
   description     String?
+
   filePath        String        @map("file_path")
   fileName        String        @map("file_name")
   mimeType        String        @map("mime_type")
@@ -39,7 +48,6 @@ model ContentApproval {
   notes      String?
   createdAt  DateTime       @default(now()) @map("created_at")
 
-  // Relations
   content  Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   reviewer User    @relation(fields: [reviewedBy], references: [id])
 
@@ -58,7 +66,6 @@ model ContentAccessLog {
   durationSeconds Int?         @map("duration_seconds")
   accessedAt      DateTime     @default(now()) @map("accessed_at")
 
-  // Relations
   content    Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
   accessedBy User    @relation(fields: [accessedById], references: [id])
 
@@ -67,3 +74,4 @@ model ContentAccessLog {
   @@index([accessedAt])
   @@map("content_access_logs")
 }
+

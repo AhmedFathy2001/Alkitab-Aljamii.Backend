@@ -1,12 +1,14 @@
 model Subject {
-  id          String   @id @default(uuid())
-  facultyId   String   @map("faculty_id")
-  name        String
-  code        String
-  description String?
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid())
+  facultyId     String   @map("faculty_id")
+  nameEn        String
+  nameAr        String
+  code          String
+  descriptionEn String?
+  descriptionAr String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
   faculty     Faculty                 @relation(fields: [facultyId], references: [id], onDelete: Cascade)

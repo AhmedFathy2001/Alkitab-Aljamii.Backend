@@ -8,11 +8,17 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSubjectDto {
-  @ApiProperty({ description: 'Subject name' })
+  @ApiProperty({ description: 'Subject name in English' })
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  name!: string;
+  nameEn!: string;
+
+  @ApiProperty({ description: 'Subject name in Arabic' })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  nameAr!: string;
 
   @ApiProperty({ description: 'Subject code (unique within faculty)' })
   @IsString()
@@ -24,9 +30,15 @@ export class CreateSubjectDto {
   @IsUUID()
   facultyId!: string;
 
-  @ApiPropertyOptional({ description: 'Subject description' })
+  @ApiPropertyOptional({ description: 'Subject description in English' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  description?: string;
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({ description: 'Subject description in Arabic' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  descriptionAr?: string;
 }

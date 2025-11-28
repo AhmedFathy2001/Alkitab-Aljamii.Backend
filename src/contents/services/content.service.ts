@@ -1,16 +1,13 @@
 import { Injectable, Inject, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import {
-  type IStorageService,
   STORAGE_SERVICE,
 } from '../../storage/storage.interface.js';
+import type { IStorageService } from '../../storage/storage.interface.js';
 import { PdfPagesService } from './pdf-pages.service.js';
 import { CreateContentDto } from '../dto/create-content.dto.js';
-import {
-  ContentResponseDto,
-  PaginatedContentResponseDto,
-} from '../dto/content-response.dto.js';
-import { ContentType } from '@prisma/client';
+import { ContentResponseDto, PaginatedContentResponseDto } from '../dto/content-response.dto.js';
+import { ContentType } from '@prisma/client/index-browser';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
 import { mapToContentResponse } from '../utils/content-mapper.js';
 
@@ -60,16 +57,16 @@ export class ContentService {
         pageCount = await this.pdfPagesService.getPageCount(file.buffer);
         this.logger.log(`Calculated page count for upload: ${pageCount} pages`);
       } catch (err) {
-        this.logger.warn(
-          `Failed to calculate page count during upload: ${String(err)}`,
-        );
+        this.logger.warn(`Failed to calculate page count during upload: ${String(err)}`);
       }
     }
 
     const content = await this.prisma.content.create({
       data: {
-        title: dto.title,
-        description: dto.description ?? '',
+        titleEn: dto.titleEn,
+        titleAr: dto.titleAr,
+        descriptionEn: dto.descriptionEn ?? '',
+        descriptionAr: dto.descriptionAr ?? '',
         filePath: uploadResult.key,
         fileName: file.originalname,
         mimeType: file.mimetype,
@@ -81,12 +78,18 @@ export class ContentService {
         subjectId: dto.subjectId,
       },
       include: {
-        subject: { select: { name: true } },
+        subject: { select: { nameEn: true, nameAr: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
 
-    return mapToContentResponse(content);
+    // تحويل subject لـ الشكل المطلوب
+    const mappedContent = {
+      ...content,
+      subject: { name: `${content.subject.nameEn} / ${content.subject.nameAr}` },
+    };
+
+    return mapToContentResponse(mappedContent);
   }
 
   async getAllContents(
@@ -128,44 +131,58 @@ export class ContentService {
       where,
       orderBy: { createdAt: 'desc' },
       include: {
-        subject: { select: { name: true, facultyId: true } },
+        subject: { select: { nameEn: true, nameAr: true, facultyId: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
 
-    return { data: contents.map(mapToContentResponse), total: contents.length };
+    const mappedContents = contents.map((c) => ({
+      ...c,
+      subject: { name: `${c.subject.nameEn} / ${c.subject.nameAr}` },
+    }));
+
+    return { data: mappedContents.map(mapToContentResponse), total: contents.length };
   }
 
   async getContentById(id: string): Promise<ContentResponseDto> {
     const content = await this.prisma.content.findUnique({
       where: { id },
       include: {
-        subject: { select: { name: true } },
+        subject: { select: { nameEn: true, nameAr: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
+
     if (!content) throw new NotFoundException('Content not found');
-    return mapToContentResponse(content);
+
+    const mappedContent = {
+      ...content,
+      subject: { name: `${content.subject.nameEn} / ${content.subject.nameAr}` },
+    };
+
+    return mapToContentResponse(mappedContent);
   }
 
-  async approveContent(
-    id: string,
-    approvedById: string,
-  ): Promise<ContentResponseDto> {
+  async approveContent(id: string, approvedById: string): Promise<ContentResponseDto> {
     const content = await this.prisma.content.update({
       where: { id },
       data: { status: 'approved', approvedById, approvedAt: new Date() },
       include: {
-        subject: { select: { name: true } },
+        subject: { select: { nameEn: true, nameAr: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
+
+    const mappedContent = {
+      ...content,
+      subject: { name: `${content.subject.nameEn} / ${content.subject.nameAr}` },
+    };
 
     await this.prisma.contentApproval.create({
       data: { contentId: id, reviewedBy: approvedById, action: 'approved' },
     });
 
-    return mapToContentResponse(content);
+    return mapToContentResponse(mappedContent);
   }
 
   async rejectContent(
@@ -177,10 +194,15 @@ export class ContentService {
       where: { id },
       data: { status: 'rejected', rejectionReason: reason ?? null },
       include: {
-        subject: { select: { name: true } },
+        subject: { select: { nameEn: true, nameAr: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
+
+    const mappedContent = {
+      ...content,
+      subject: { name: `${content.subject.nameEn} / ${content.subject.nameAr}` },
+    };
 
     await this.prisma.contentApproval.create({
       data: {
@@ -191,7 +213,7 @@ export class ContentService {
       },
     });
 
-    return mapToContentResponse(content);
+    return mapToContentResponse(mappedContent);
   }
 
   async deleteContent(id: string): Promise<void> {
@@ -216,9 +238,7 @@ export class ContentService {
     mimeType: string;
   }> {
     const content = await this.getContentFileInfo(id);
-    const stream: NodeJS.ReadableStream = await this.storage.getFileStream(
-      content.filePath,
-    );
+    const stream: NodeJS.ReadableStream = await this.storage.getFileStream(content.filePath);
     return { stream, fileName: content.fileName, mimeType: content.mimeType };
   }
 
@@ -226,7 +246,6 @@ export class ContentService {
     id: string,
   ): Promise<{ buffer: Buffer; fileName: string; mimeType: string }> {
     const content = await this.getContentFileInfo(id);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const buffer: Buffer = await this.storage.getFileBuffer(content.filePath);
     return { buffer, fileName: content.fileName, mimeType: content.mimeType };
   }
@@ -234,15 +253,10 @@ export class ContentService {
   async getPageCount(
     id: string,
   ): Promise<{ totalPages: number; chunkSize: number }> {
-    const content = (await this.prisma.content.findUnique({
+    const content = await this.prisma.content.findUnique({
       where: { id },
       select: { id: true, pageCount: true, mimeType: true, filePath: true },
-    })) as {
-      id: string;
-      pageCount: number | null;
-      mimeType: string;
-      filePath: string;
-    } | null;
+    });
 
     if (!content) throw new NotFoundException('Content not found');
     if (content.mimeType !== 'application/pdf') {
@@ -257,18 +271,13 @@ export class ContentService {
     }
 
     this.logger.log(`Calculating page count for existing content: ${id}`);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const buffer: Buffer = await this.storage.getFileBuffer(content.filePath);
     const pageCount = await this.pdfPagesService.getPageCount(buffer);
 
     this.prisma.content
       .update({ where: { id }, data: { pageCount } })
-      .then(() =>
-        this.logger.log(`Stored page count ${pageCount} for content ${id}`),
-      )
-      .catch((err) =>
-        this.logger.warn(`Failed to store page count for ${id}: ${err}`),
-      );
+      .then(() => this.logger.log(`Stored page count ${pageCount} for content ${id}`))
+      .catch((err) => this.logger.warn(`Failed to store page count for ${id}: ${err}`));
 
     return {
       totalPages: pageCount,
@@ -276,3 +285,4 @@ export class ContentService {
     };
   }
 }
+

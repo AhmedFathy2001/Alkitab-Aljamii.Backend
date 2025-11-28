@@ -1,12 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FacultyRole } from '@prisma/client';
+import { FacultyRole } from '@prisma/client/index-browser';
+
 
 export class FacultyRoleDto {
   @ApiProperty()
   facultyId!: string;
 
-  @ApiProperty()
-  facultyName!: string;
+  @ApiProperty({ description: 'Faculty name in English', example: 'Engineering' })
+  nameEn!: string;
+
+  @ApiProperty({ description: 'Faculty name in Arabic', example: 'الهندسة' })
+  nameAr!: string;
 
   @ApiProperty({ enum: FacultyRole })
   role!: FacultyRole;

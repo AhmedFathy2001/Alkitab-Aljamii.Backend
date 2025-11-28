@@ -1,10 +1,13 @@
-import type { ContentType } from '@prisma/client';
-import type { ContentResponseDto } from '../dto/content-response.dto.js';
+import { ContentType } from '@prisma/client/index-browser';
+
+import { ContentResponseDto } from '../dto/content-response.dto.js';
 
 export interface ContentWithRelations {
   id: string;
-  title: string;
-  description: string | null;
+  titleEn: string;
+  titleAr: string;
+  descriptionEn: string | null;
+  descriptionAr: string | null;
   filePath: string;
   fileName: string;
   mimeType: string;
@@ -23,22 +26,26 @@ export interface ContentWithRelations {
 export function mapToContentResponse(
   content: ContentWithRelations,
 ): ContentResponseDto {
-  return {
-    id: content.id,
-    title: content.title,
-    description: content.description ?? '',
-    filePath: content.filePath,
-    fileName: content.fileName,
-    mimeType: content.mimeType,
-    contentType: content.contentType,
-    fileSize: Number(content.fileSize),
-    status: content.status as 'pending' | 'approved' | 'rejected',
-    approvedById: content.approvedById,
-    subjectId: content.subjectId,
-    subjectName: content.subject.name,
-    uploadedById: content.uploadedById,
-    uploadedByName: `${content.uploadedBy.firstName} ${content.uploadedBy.lastName}`,
-    createdAt: content.createdAt,
-    updatedAt: content.updatedAt,
-  };
+  const dto = new ContentResponseDto(); // constructor فارغ
+
+  dto.id = content.id;
+  dto.titleEn = content.titleEn;
+  dto.titleAr = content.titleAr;
+  dto.descriptionEn = content.descriptionEn ?? '';
+  dto.descriptionAr = content.descriptionAr ?? '';
+  dto.filePath = content.filePath;
+  dto.fileName = content.fileName;
+  dto.mimeType = content.mimeType;
+  dto.contentType = content.contentType;
+  dto.fileSize = Number(content.fileSize);
+  dto.status = content.status as 'pending' | 'approved' | 'rejected';
+  dto.approvedById = content.approvedById;
+  dto.subjectId = content.subjectId;
+  dto.subjectName = content.subject.name;
+  dto.uploadedById = content.uploadedById;
+  dto.uploadedByName = `${content.uploadedBy.firstName} ${content.uploadedBy.lastName}`;
+  dto.createdAt = content.createdAt;
+  dto.updatedAt = content.updatedAt;
+
+  return dto;
 }

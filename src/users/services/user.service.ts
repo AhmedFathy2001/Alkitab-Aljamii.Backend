@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { Prisma } from '@prisma/client';
-import type { User } from '@prisma/client';
+import { Prisma } from '@prisma/client/index-browser';
+import type { User } from '@prisma/client/index-browser';
 import type { PaginatedResult } from '../../common/pagination/pagination.dto.js';
 import type { CreateUserDto } from '../dto/create-user.dto.js';
 import type {
@@ -103,7 +103,13 @@ export class UserService {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          facultyRoles: { include: { faculty: { select: { name: true } } } },
+          facultyRoles: {
+            include: {
+              faculty: {
+                select: { id: true, nameEn: true, nameAr: true, code: true },
+              },
+            },
+          },
         },
       }),
       this.prisma.user.count({ where }),
@@ -127,7 +133,13 @@ export class UserService {
     const user = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
       include: {
-        facultyRoles: { include: { faculty: { select: { name: true } } } },
+        facultyRoles: {
+          include: {
+            faculty: {
+              select: { id: true, nameEn: true, nameAr: true, code: true },
+            },
+          },
+        },
       },
     });
     if (!user) throw new NotFoundException('User not found');
@@ -157,7 +169,13 @@ export class UserService {
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
       include: {
-        facultyRoles: { include: { faculty: { select: { name: true } } } },
+        facultyRoles: {
+          include: {
+            faculty: {
+              select: { id: true, nameEn: true, nameAr: true, code: true },
+            },
+          },
+        },
       },
     });
 
@@ -196,7 +214,13 @@ export class UserService {
       where: { id },
       data: { deletedAt: null },
       include: {
-        facultyRoles: { include: { faculty: { select: { name: true } } } },
+        facultyRoles: {
+          include: {
+            faculty: {
+              select: { id: true, nameEn: true, nameAr: true, code: true },
+            },
+          },
+        },
       },
     });
     return toUserResponseDto(restored);

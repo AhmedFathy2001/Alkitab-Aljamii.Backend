@@ -64,15 +64,17 @@ export class ContentController {
       type: 'object',
       properties: {
         file: { type: 'string', format: 'binary' },
-        title: { type: 'string' },
-        description: { type: 'string' },
+        titleEn: { type: 'string' },
+        titleAr: { type: 'string' },
+        descriptionEn: { type: 'string' },
+        descriptionAr: { type: 'string' },
         subjectId: { type: 'string', format: 'uuid' },
         contentType: {
           type: 'string',
           enum: ['textbook', 'reference', 'notes', 'guide', 'other'],
         },
       },
-      required: ['file', 'title', 'subjectId', 'contentType'],
+      required: ['file', 'titleEn', 'subjectId', 'contentType'],
     },
   })
   @ApiResponse({

@@ -14,8 +14,10 @@ export async function getUserAssociationsData(
 ): Promise<UserAssociationsDto> {
   const facultyRoles = await prisma.userFacultyRole.findMany({
     where: { userId },
-    include: { faculty: { select: { id: true, name: true, code: true } } },
-    orderBy: { faculty: { name: 'asc' } },
+    include: {
+      faculty: { select: { id: true, nameEn: true, nameAr: true, code: true } },
+    },
+    orderBy: { faculty: { nameEn: 'asc' } },
   });
 
   const subjectAssignments = await prisma.userSubjectAssignment.findMany({
@@ -24,9 +26,10 @@ export async function getUserAssociationsData(
       subject: {
         select: {
           id: true,
-          name: true,
+          nameEn: true,
+          nameAr: true,
           code: true,
-          faculty: { select: { name: true } },
+          faculty: { select: { nameEn: true, nameAr: true } },
         },
       },
     },
@@ -35,15 +38,18 @@ export async function getUserAssociationsData(
   return {
     faculties: facultyRoles.map((fr) => ({
       id: fr.faculty.id,
-      name: fr.faculty.name,
+      nameEn: fr.faculty.nameEn,
+      nameAr: fr.faculty.nameAr,
       code: fr.faculty.code,
       role: fr.role,
     })),
     subjects: subjectAssignments.map((sa) => ({
       id: sa.subject.id,
-      name: sa.subject.name,
+      nameEn: sa.subject.nameEn,
+      nameAr: sa.subject.nameAr,
       code: sa.subject.code,
-      facultyName: sa.subject.faculty.name,
+      facultyNameEn: sa.subject.faculty.nameEn,
+      facultyNameAr: sa.subject.faculty.nameAr,
     })),
   };
 }
@@ -58,8 +64,8 @@ export async function getMyFacultiesData(
   if (currentUser.isSuperAdmin) {
     const allFaculties = await prisma.faculty.findMany({
       where: { deletedAt: null, isActive: true },
-      select: { id: true, name: true, code: true },
-      orderBy: { name: 'asc' },
+      select: { id: true, nameEn: true, nameAr: true, code: true },
+      orderBy: { nameEn: 'asc' },
     });
     return allFaculties.map((f) => ({
       ...f,
@@ -75,13 +81,16 @@ export async function getMyFacultiesData(
         : {}),
       faculty: { deletedAt: null, isActive: true },
     },
-    include: { faculty: { select: { id: true, name: true, code: true } } },
-    orderBy: { faculty: { name: 'asc' } },
+    include: {
+      faculty: { select: { id: true, nameEn: true, nameAr: true, code: true } },
+    },
+    orderBy: { faculty: { nameEn: 'asc' } },
   });
 
   return facultyRoles.map((fr) => ({
     id: fr.faculty.id,
-    name: fr.faculty.name,
+    nameEn: fr.faculty.nameEn,
+    nameAr: fr.faculty.nameAr,
     code: fr.faculty.code,
     role: fr.role,
   }));
@@ -102,18 +111,17 @@ export async function getAvailableViewsData(
 
   const facultyRoles = await prisma.userFacultyRole.findMany({
     where: { userId, faculty: { deletedAt: null, isActive: true } },
-    include: { faculty: { select: { id: true, name: true } } },
+    include: { faculty: { select: { id: true, nameEn: true, nameAr: true } } },
     orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
   });
 
-  // Build available views with faculty context
   const availableViews: AvailableView[] = facultyRoles.map((fr) => ({
     role: fr.role as ViewRole,
     facultyId: fr.facultyId,
-    facultyName: fr.faculty.name,
+    facultyNameEn: fr.faculty.nameEn,
+    facultyNameAr: fr.faculty.nameAr,
   }));
 
-  // Determine primary role (highest privilege)
   let primaryRole: ViewRole = 'student';
   let primaryFacultyId: string | undefined;
 

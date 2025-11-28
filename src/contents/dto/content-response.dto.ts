@@ -1,7 +1,12 @@
 export class ContentResponseDto {
   id!: string;
-  title!: string;
-  description!: string;
+
+  titleEn!: string;
+  titleAr!: string;
+
+  descriptionEn!: string;
+  descriptionAr!: string;
+
   filePath!: string;
   fileName!: string;
   mimeType!: string;
@@ -15,6 +20,22 @@ export class ContentResponseDto {
   uploadedByName!: string;
   createdAt!: Date;
   updatedAt!: Date;
+
+  /**
+   * Return localized title
+   * @param lang 'en' | 'ar'
+   */
+  getTitle(lang: 'en' | 'ar') {
+    return lang === 'ar' ? this.titleAr : this.titleEn;
+  }
+
+  /**
+   * Return localized description
+   * @param lang 'en' | 'ar'
+   */
+  getDescription(lang: 'en' | 'ar') {
+    return lang === 'ar' ? this.descriptionAr : this.descriptionEn;
+  }
 }
 
 export class PaginatedContentResponseDto {

@@ -5,13 +5,19 @@ export class FacultyResponseDto {
   id!: string;
 
   @ApiProperty({ example: 'Faculty of Engineering' })
-  name!: string;
+  nameEn!: string;
+
+  @ApiProperty({ example: 'كلية الهندسة' })
+  nameAr!: string;
 
   @ApiProperty({ example: 'ENG' })
   code!: string;
 
   @ApiPropertyOptional({ example: 'Engineering and Technology faculty' })
-  description?: string | null;
+  descriptionEn?: string | null;
+
+  @ApiPropertyOptional({ example: 'كلية الهندسة والتكنولوجيا' })
+  descriptionAr?: string | null;
 
   @ApiProperty({ example: true })
   isActive!: boolean;

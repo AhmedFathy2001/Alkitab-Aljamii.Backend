@@ -8,16 +8,27 @@ import {
 } from 'class-validator';
 
 export class CreateContentDto {
-  @ApiProperty({ description: 'Content title', maxLength: 200 })
+  @ApiProperty({ description: 'Content title in English', maxLength: 200 })
   @IsString()
   @MaxLength(200)
-  title!: string;
+  titleEn!: string;
 
-  @ApiPropertyOptional({ description: 'Content description', maxLength: 500 })
+  @ApiProperty({ description: 'Content title in Arabic', maxLength: 200 })
+  @IsString()
+  @MaxLength(200)
+  titleAr!: string;
+
+  @ApiPropertyOptional({ description: 'Content description in English', maxLength: 500 })
   @IsString()
   @IsOptional()
   @MaxLength(500)
-  description?: string;
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({ description: 'Content description in Arabic', maxLength: 500 })
+  @IsString()
+  @IsOptional()
+  @MaxLength(500)
+  descriptionAr?: string;
 
   @ApiProperty({ description: 'Subject ID' })
   @IsUUID()

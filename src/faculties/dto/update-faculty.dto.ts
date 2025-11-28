@@ -10,12 +10,21 @@ import {
 export class UpdateFacultyDto {
   @ApiPropertyOptional({
     example: 'Faculty of Engineering',
-    description: 'Faculty name',
+    description: 'Faculty name in English',
   })
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  name?: string;
+  nameEn?: string;
+
+  @ApiPropertyOptional({
+    example: 'كلية الهندسة',
+    description: 'Faculty name in Arabic',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  nameAr?: string;
 
   @ApiPropertyOptional({ example: 'ENG', description: 'Unique faculty code' })
   @IsString()
@@ -25,12 +34,21 @@ export class UpdateFacultyDto {
 
   @ApiPropertyOptional({
     example: 'Engineering and Technology faculty',
-    description: 'Faculty description',
+    description: 'Faculty description in English',
   })
   @IsString()
   @IsOptional()
   @MaxLength(500)
-  description?: string;
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({
+    example: 'كلية الهندسة والتكنولوجيا',
+    description: 'Faculty description in Arabic',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(500)
+  descriptionAr?: string;
 
   @ApiPropertyOptional({
     example: '550e8400-e29b-41d4-a716-446655440000',

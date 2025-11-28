@@ -8,12 +8,19 @@ import {
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateSubjectDto {
-  @ApiPropertyOptional({ description: 'Subject name' })
+  @ApiPropertyOptional({ description: 'Subject name in English' })
   @IsOptional()
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  name?: string;
+  nameEn?: string;
+
+  @ApiPropertyOptional({ description: 'Subject name in Arabic' })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  nameAr?: string;
 
   @ApiPropertyOptional({ description: 'Subject code' })
   @IsOptional()
@@ -22,11 +29,17 @@ export class UpdateSubjectDto {
   @MaxLength(20)
   code?: string;
 
-  @ApiPropertyOptional({ description: 'Subject description' })
+  @ApiPropertyOptional({ description: 'Subject description in English' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  description?: string;
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({ description: 'Subject description in Arabic' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  descriptionAr?: string;
 
   @ApiPropertyOptional({ description: 'Active status' })
   @IsOptional()

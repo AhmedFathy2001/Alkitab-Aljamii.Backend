@@ -1,9 +1,9 @@
-import type { User, UserFacultyRole } from '@prisma/client';
+import { User, UserFacultyRole } from '@prisma/client';
 import type { UserResponseDto } from '../dto/user-response.dto.js';
 
 export type UserWithFacultyRoles = User & {
   facultyRoles?: (UserFacultyRole & {
-    faculty: { name: string };
+    faculty: { nameEn: string; nameAr: string };
   })[];
 };
 
@@ -14,13 +14,16 @@ export function toUserResponseDto(user: UserWithFacultyRoles): UserResponseDto {
     firstName: user.firstName,
     lastName: user.lastName,
     isSuperAdmin: user.isSuperAdmin,
+
     facultyRoles: user.facultyRoles
       ? user.facultyRoles.map((fr) => ({
           facultyId: fr.facultyId,
-          facultyName: fr.faculty.name,
+          facultyNameEn: fr.faculty.nameEn,
+          facultyNameAr: fr.faculty.nameAr,
           role: fr.role,
         }))
       : undefined,
+
     isActive: user.isActive,
     lastLogin: user.lastLogin,
     createdAt: user.createdAt,

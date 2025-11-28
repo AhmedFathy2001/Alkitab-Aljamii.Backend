@@ -1,12 +1,15 @@
+import { FacultyRole } from '@prisma/client/index-browser';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { FacultyRole } from '@prisma/client';
 
 export class UserFacultyRoleDto {
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
   facultyId!: string;
 
   @ApiProperty({ example: 'Faculty of Engineering' })
-  facultyName!: string;
+  facultyNameEn!: string;
+
+  @ApiProperty({ example: 'كلية الهندسة' })
+  facultyNameAr!: string;
 
   @ApiProperty({ enum: FacultyRole, example: 'professor' })
   role!: FacultyRole;
@@ -34,7 +37,10 @@ export class UserResponseDto {
   @ApiProperty({ example: true })
   isActive!: boolean;
 
-  @ApiPropertyOptional({ example: '2025-01-15T10:30:00.000Z', nullable: true })
+  @ApiPropertyOptional({
+    example: '2025-01-15T10:30:00.000Z',
+    nullable: true,
+  })
   lastLogin!: Date | null;
 
   @ApiProperty({ example: '2025-01-01T00:00:00.000Z' })

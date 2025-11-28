@@ -1,6 +1,7 @@
+import { memoryStorage } from 'multer';
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
+
 import { ContentController } from './controllers/contents.controller.js';
 import { ContentStreamController } from './controllers/content-stream.controller.js';
 import { ContentService } from './services/content.service.js';

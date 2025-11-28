@@ -1,12 +1,14 @@
 model Faculty {
-  id          String    @id @default(uuid())
-  name        String
-  code        String    @unique
-  description String?
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  id           String    @id @default(uuid())
+  nameEn       String
+  nameAr       String
+  code         String    @unique
+  descriptionEn String?
+  descriptionAr String?
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
   // Relations
   facultyRoles UserFacultyRole[]

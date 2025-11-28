@@ -2,9 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
+import { I18nMiddleware } from './i18n/i18n.middleware';
+
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  app.use(new I18nMiddleware().use);
 
   // Global validation pipe with strict settings
   app.useGlobalPipes(

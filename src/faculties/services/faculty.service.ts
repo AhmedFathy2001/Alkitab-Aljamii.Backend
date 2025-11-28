@@ -4,8 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { Prisma } from '@prisma/client';
-import type { Faculty } from '@prisma/client';
+import type { Prisma, Faculty } from '@prisma/client/index-browser';
 import type { PaginatedResult } from '../../common/pagination/pagination.dto.js';
 import type { CreateFacultyDto } from '../dto/create-faculty.dto.js';
 import type { UpdateFacultyDto } from '../dto/update-faculty.dto.js';
@@ -38,9 +37,11 @@ export class FacultyService {
 
     const faculty = await this.prisma.faculty.create({
       data: {
-        name: dto.name,
+        nameEn: dto.nameEn,
+        nameAr: dto.nameAr,
         code: dto.code,
-        ...(dto.description && { description: dto.description }),
+        ...(dto.descriptionEn && { descriptionEn: dto.descriptionEn }),
+        ...(dto.descriptionAr && { descriptionAr: dto.descriptionAr }),
       },
     });
 
@@ -119,9 +120,11 @@ export class FacultyService {
     const updated = await this.prisma.faculty.update({
       where: { id },
       data: {
-        ...(dto.name && { name: dto.name }),
+        ...(dto.nameEn && { nameEn: dto.nameEn }),
+        ...(dto.nameAr && { nameAr: dto.nameAr }),
         ...(dto.code && { code: dto.code }),
-        ...(dto.description !== undefined && { description: dto.description }),
+        ...(dto.descriptionEn !== undefined && { descriptionEn: dto.descriptionEn }),
+        ...(dto.descriptionAr !== undefined && { descriptionAr: dto.descriptionAr }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });
@@ -170,7 +173,8 @@ export class FacultyService {
     const searchFilter: Prisma.FacultyWhereInput | undefined = search
       ? {
           OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
+            { nameEn: { contains: search, mode: 'insensitive' as const } },
+            { nameAr: { contains: search, mode: 'insensitive' as const } },
             { code: { contains: search, mode: 'insensitive' as const } },
           ],
         }
@@ -208,3 +212,4 @@ export class FacultyService {
     }
   }
 }
+
