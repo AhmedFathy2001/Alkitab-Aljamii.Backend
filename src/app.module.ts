@@ -44,15 +44,15 @@ import { LocalizationInterceptor } from './common/interceptors/localization.inte
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: LocalizationInterceptor,  
+      useClass: LoggingInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,      
+      useClass: TransformInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,        
+      useClass: LocalizationInterceptor, // Runs last to process wrapped response
     },
     {
       provide: APP_GUARD,

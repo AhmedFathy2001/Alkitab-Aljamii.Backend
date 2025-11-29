@@ -1,48 +1,66 @@
 import {
-    Injectable,
-    NestInterceptor,
-    ExecutionContext,
-    CallHandler,
-  } from '@nestjs/common';
-  import { Observable } from 'rxjs';
-  import { map } from 'rxjs/operators';
-  import { Request } from 'express';
-  
-  @Injectable()
-  export class LocalizationInterceptor implements NestInterceptor {
-    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-      const request = context.switchToHttp().getRequest<Request>();
-      const lang = request.lang || 'en';
-  
-      return next.handle().pipe(
-        map(data => this.localizeResponse(data, lang))
-      );
-    }
-  
-    private localizeResponse(data: any, lang: string): any {
-      if (Array.isArray(data)) {
-        return data.map(item => this.localizeResponse(item, lang));
-      }
-  
-      if (data && typeof data === 'object') {
-        const result = { ...data };
-        
-        // Apply localized values
-        for (const key of Object.keys(result)) {
-          if (key.endsWith('Ar') && lang === 'ar') {
-            const baseKey = key.slice(0, -2);
-            result[baseKey] = result[key] ?? result[baseKey];
-          }
-        }
-        
-        // Clean up *Ar fields
-        for (const key of Object.keys(result)) {
-          if (key.endsWith('Ar')) delete result[key];
-        }
-        
-        return result;
-      }
-  
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { Request } from 'express';
+
+@Injectable()
+export class LocalizationInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const request = context.switchToHttp().getRequest<Request>();
+    const lang = request.lang || 'en';
+
+    return next.handle().pipe(map((data) => this.localizeResponse(data, lang)));
+  }
+
+  private localizeResponse(data: any, lang: string): any {
+    if (data === null || data === undefined) {
       return data;
     }
+
+    if (Array.isArray(data)) {
+      return data.map((item) => this.localizeResponse(item, lang));
+    }
+
+    if (typeof data === 'object') {
+      const result: Record<string, any> = {};
+
+      for (const key of Object.keys(data)) {
+        const value = data[key];
+
+        // Skip *Ar keys - we'll handle them when processing the base key
+        if (key.endsWith('Ar')) {
+          continue;
+        }
+
+        const arKey = `${key}Ar`;
+        const hasArVersion = arKey in data;
+
+        if (hasArVersion && lang === 'ar') {
+          // Use Arabic value if available, fallback to base value
+          result[key] = data[arKey] ?? value;
+        } else if (hasArVersion) {
+          // English - just use base value
+          result[key] = value;
+        } else if (
+          typeof value === 'object' &&
+          value !== null &&
+          !(value instanceof Date)
+        ) {
+          // Recursively process nested objects/arrays
+          result[key] = this.localizeResponse(value, lang);
+        } else {
+          result[key] = value;
+        }
+      }
+
+      return result;
+    }
+
+    return data;
   }
+}

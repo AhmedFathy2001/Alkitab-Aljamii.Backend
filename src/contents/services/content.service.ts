@@ -7,7 +7,7 @@ import { CreateContentDto } from '../dto/create-content.dto.js';
 import { ContentResponseDto, PaginatedContentResponseDto } from '../dto/content-response.dto.js';
 import { ContentType } from '@prisma/client/index-browser';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
-import { mapToContentResponse } from '../utils/content-mapper.js';
+import { mapToContentResponse, ContentWithRelations } from '../utils/content-mapper.js';
 import { I18nService } from 'nestjs-i18n';
 
 type UploadedFileType = {
@@ -64,9 +64,9 @@ export class ContentService {
     const content = await this.prisma.content.create({
       data: {
         title: dto.title,
-        titleAr: dto.titleAr,
+        titleAr: dto.titleAr ?? null,
         description: dto.description ?? '',
-        descriptionAr: dto.descriptionAr ?? '',
+        descriptionAr: dto.descriptionAr ?? null,
         filePath: uploadResult.key,
         fileName: file.originalname,
         mimeType: file.mimetype,
@@ -83,7 +83,7 @@ export class ContentService {
       },
     });
 
-    return mapToContentResponse(content);
+    return mapToContentResponse(content as ContentWithRelations);
   }
 
   async getAllContents(
