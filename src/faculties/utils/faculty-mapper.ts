@@ -1,18 +1,16 @@
 
-import { Faculty } from '@prisma/client/index-browser';
 import type { FacultyResponseDto } from '../dto/faculty-response.dto.js';
 
-export function toFacultyResponseDto(faculty: Faculty): FacultyResponseDto {
+export function toFacultyResponseDto(faculty: any): FacultyResponseDto {
   return {
     id: faculty.id,
-    nameEn: faculty.name ?? '',
-    nameAr: faculty.name ?? '',
+    name: faculty.name,
+    nameAr: faculty.nameAr ?? null,
+    description: faculty.description ?? null,
+    descriptionAr: faculty.descriptionAr ?? null,
     code: faculty.code,
-    descriptionEn: faculty.description ?? '',
-    descriptionAr: faculty.description ?? '',
     isActive: faculty.isActive,
     createdAt: faculty.createdAt,
     updatedAt: faculty.updatedAt,
   };
 }
-

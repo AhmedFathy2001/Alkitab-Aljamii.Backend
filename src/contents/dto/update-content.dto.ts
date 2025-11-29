@@ -7,7 +7,7 @@ export class UpdateContentDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
-  titleEn?: string;
+  title?: string;
 
   @ApiPropertyOptional({ description: 'Content title in Arabic', maxLength: 200 })
   @IsOptional()
@@ -20,7 +20,7 @@ export class UpdateContentDto {
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  descriptionEn?: string;
+  description?: string;
 
   @ApiPropertyOptional({ description: 'Content description in Arabic', maxLength: 500 })
   @IsOptional()

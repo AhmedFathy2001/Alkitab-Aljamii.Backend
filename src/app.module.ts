@@ -1,3 +1,4 @@
+
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller.js';
@@ -18,6 +19,7 @@ import { ContentModule } from './contents/content.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { SubjectsModule } from './subjects/subjects.module.js';
 import { StatsModule } from './stats/stats.module.js';
+import { LocalizationInterceptor } from './common/interceptors/localization.interceptor.js';
 
 @Module({
   imports: [
@@ -42,11 +44,15 @@ import { StatsModule } from './stats/stats.module.js';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
+      useClass: LocalizationInterceptor,  
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
+      useClass: TransformInterceptor,      
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,        
     },
     {
       provide: APP_GUARD,
@@ -56,6 +62,6 @@ import { StatsModule } from './stats/stats.module.js';
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
-  ],
+  ],  
 })
 export class AppModule {}

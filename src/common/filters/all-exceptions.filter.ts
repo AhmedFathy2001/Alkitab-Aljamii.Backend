@@ -17,6 +17,19 @@ interface ErrorResponse {
   details?: unknown;
 }
 
+const messages = {
+  en: {
+    INTERNAL_SERVER_ERROR: 'Internal server error',
+    FORBIDDEN: 'You do not have permission',
+    UNAUTHORIZED: 'Unauthorized access',
+  },
+  ar: {
+    INTERNAL_SERVER_ERROR: 'حدث خطأ في الخادم',
+    FORBIDDEN: 'ليس لديك إذن للوصول',
+    UNAUTHORIZED: 'دخول غير مصرح به',
+  },
+};
+
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
@@ -26,8 +39,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const { status, message, error, details } =
-      this.extractErrorInfo(exception);
+    const lang = request.lang || 'en'; 
+
+    const { status, message, error, details } = this.extractErrorInfo(exception, lang);
 
     const errorResponse: ErrorResponse = {
       statusCode: status,
@@ -49,12 +63,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.status(status).json(errorResponse);
   }
 
-  private extractErrorInfo(exception: unknown): {
-    status: number;
-    message: string;
-    error: string;
-    details?: unknown;
-  } {
+  private extractErrorInfo(
+    exception: unknown,
+    lang: 'en' | 'ar',
+  ): { status: number; message: string; error: string; details?: unknown } {
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
@@ -68,18 +80,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
 
       const responseObj = exceptionResponse as Record<string, unknown>;
+      let message = (responseObj['message'] as string) ?? messages[lang].INTERNAL_SERVER_ERROR;
+      let error = (responseObj['error'] as string) ?? HttpStatus[status]?.toString() ?? 'Error';
+      if (status === HttpStatus.FORBIDDEN) message = messages[lang].FORBIDDEN;
+      if (status === HttpStatus.UNAUTHORIZED) message = messages[lang].UNAUTHORIZED;
+
       return {
         status,
-        message: (responseObj['message'] as string) ?? 'An error occurred',
-        error:
-          (responseObj['error'] as string) ?? HttpStatus[status] ?? 'Error',
+        message,
+        error,
         details: responseObj['details'],
       };
     }
 
     return {
       status: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'Internal server error',
+      message: messages[lang].INTERNAL_SERVER_ERROR,
       error: 'Internal Server Error',
     };
   }

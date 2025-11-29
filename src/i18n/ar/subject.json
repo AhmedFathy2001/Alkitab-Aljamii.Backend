@@ -1,0 +1,10 @@
+{
+    "NOT_FOUND": "المادة غير موجودة",
+    "ASSIGNMENT_NOT_FOUND": "التكليف غير موجود",
+    "USER_NOT_FOUND": "المستخدم غير موجود",
+    "NO_ACCESS": "لا يوجد وصول لهذه المادة",
+    "NO_WRITE_ACCESS": "لا يوجد إذن كتابة لهذه المادة",
+    "USER_ALREADY_ASSIGNED": "المستخدم مُعين بالفعل لهذه المادة",
+    "USER_FACULTY_ROLE_INVALID_PROFESSOR": "يجب أن يكون للمستخدم دور أستاذ أو مدير كلية في هذه الكلية",
+    "USER_FACULTY_ROLE_INVALID_STUDENT": "يجب أن يكون للمستخدم دور طالب في هذه الكلية"
+}

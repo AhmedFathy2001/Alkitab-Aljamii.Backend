@@ -13,12 +13,14 @@ import type { FacultyResponseDto } from '../dto/faculty-response.dto.js';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
 import { FacultyAccessService } from './faculty-access.service.js';
 import { toFacultyResponseDto } from '../utils/faculty-mapper.js';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class FacultyService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly accessService: FacultyAccessService,
+    private readonly i18n:  I18nService, // i18n service
   ) {}
 
   async create(
@@ -32,15 +34,16 @@ export class FacultyService {
     });
 
     if (existing) {
-      throw new ConflictException('Faculty code already exists');
+      const message = await this.i18n.translate('faculty.CODE_EXISTS');
+      throw new ConflictException(message);
     }
 
     const faculty = await this.prisma.faculty.create({
       data: {
-        nameEn: dto.nameEn,
+        name: dto.name,
         nameAr: dto.nameAr,
         code: dto.code,
-        ...(dto.descriptionEn && { descriptionEn: dto.descriptionEn }),
+        ...(dto.description && { description: dto.description }),
         ...(dto.descriptionAr && { descriptionAr: dto.descriptionAr }),
       },
     });
@@ -70,7 +73,7 @@ export class FacultyService {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      items: faculties.map((f: { description: string | null; id: string; name: string; isActive: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; code: string; }) => toFacultyResponseDto(f)),
+      items: faculties.map((f: Faculty) => toFacultyResponseDto(f)),
       meta: {
         total,
         page,
@@ -91,7 +94,8 @@ export class FacultyService {
     });
 
     if (!faculty) {
-      throw new NotFoundException('Faculty not found');
+      const message = await this.i18n.translate('faculty.NOT_FOUND');
+      throw new NotFoundException(message);
     }
 
     await this.accessService.validateReadAccess(currentUser, faculty);
@@ -110,7 +114,8 @@ export class FacultyService {
     });
 
     if (!faculty) {
-      throw new NotFoundException('Faculty not found');
+      const message = await this.i18n.translate('faculty.NOT_FOUND');
+      throw new NotFoundException(message);
     }
 
     if (dto.code && dto.code !== faculty.code) {
@@ -120,10 +125,10 @@ export class FacultyService {
     const updated = await this.prisma.faculty.update({
       where: { id },
       data: {
-        ...(dto.nameEn && { nameEn: dto.nameEn }),
+        ...(dto.name && { name: dto.name }),
         ...(dto.nameAr && { nameAr: dto.nameAr }),
         ...(dto.code && { code: dto.code }),
-        ...(dto.descriptionEn !== undefined && { descriptionEn: dto.descriptionEn }),
+        ...(dto.description !== undefined && { description: dto.description }),
         ...(dto.descriptionAr !== undefined && { descriptionAr: dto.descriptionAr }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
@@ -149,10 +154,12 @@ export class FacultyService {
 
     const faculty = await this.prisma.faculty.findUnique({ where: { id } });
     if (!faculty) {
-      throw new NotFoundException('Faculty not found');
+      const message = await this.i18n.translate('faculty.NOT_FOUND');
+      throw new NotFoundException(message);
     }
     if (!faculty.deletedAt) {
-      throw new ConflictException('Faculty is not deleted');
+      const message = await this.i18n.translate('faculty.NOT_DELETED');
+      throw new ConflictException(message);
     }
 
     const restored = await this.prisma.faculty.update({
@@ -173,7 +180,7 @@ export class FacultyService {
     const searchFilter: Prisma.FacultyWhereInput | undefined = search
       ? {
           OR: [
-            { nameEn: { contains: search, mode: 'insensitive' as const } },
+            { name: { contains: search, mode: 'insensitive' as const } },
             { nameAr: { contains: search, mode: 'insensitive' as const } },
             { code: { contains: search, mode: 'insensitive' as const } },
           ],
@@ -195,7 +202,8 @@ export class FacultyService {
       where: { id, deletedAt: null },
     });
     if (!faculty) {
-      throw new NotFoundException('Faculty not found');
+      const message = await this.i18n.translate('faculty.NOT_FOUND');
+      throw new NotFoundException(message);
     }
     return faculty;
   }
@@ -208,7 +216,8 @@ export class FacultyService {
       where: { code, id: { not: excludeId } },
     });
     if (existing) {
-      throw new ConflictException('Faculty code already exists');
+      const message = await this.i18n.translate('faculty.CODE_EXISTS');
+      throw new ConflictException(message);
     }
   }
 }

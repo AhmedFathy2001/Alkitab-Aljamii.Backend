@@ -64,9 +64,9 @@ export class ContentController {
       type: 'object',
       properties: {
         file: { type: 'string', format: 'binary' },
-        titleEn: { type: 'string' },
+        title: { type: 'string' },
         titleAr: { type: 'string' },
-        descriptionEn: { type: 'string' },
+        description: { type: 'string' },
         descriptionAr: { type: 'string' },
         subjectId: { type: 'string', format: 'uuid' },
         contentType: {

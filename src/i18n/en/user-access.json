@@ -1,0 +1,32 @@
+{
+    "USER_ACCESS": {
+      "FACULTIES": "Faculties",
+      "SUBJECTS": "Subjects",
+      "ROLES": "Roles",
+      "AVAILABLE_VIEWS": "Available Views",
+  
+      "FACULTY_ID": "Faculty ID",
+      "FACULTY_NAME": "Faculty Name",
+      "FACULTY_NAME_EN": "Faculty Name (English)",
+      "FACULTY_NAME_AR": "Faculty Name (Arabic)",
+  
+      "SUBJECT_ID": "Subject ID",
+      "SUBJECT_NAME_EN": "Subject Name (English)",
+      "SUBJECT_NAME_AR": "Subject Name (Arabic)",
+  
+      "SEMESTER": "Semester",
+      "YEAR": "Year",
+  
+      "ROLE": "Role",
+      "NO_FACULTIES": "No faculties assigned.",
+      "NO_SUBJECTS": "No subjects assigned.",
+      "NO_ROLES": "No roles assigned.",
+      "NO_VIEWS": "No views available.",
+  
+      "ERROR_FETCHING": "Failed to fetch user access data.",
+      "ERROR_UNAUTHORIZED": "You are not authorized to view this information.",
+  
+      "SUCCESS": "User access data retrieved successfully."
+    }
+  }
+  

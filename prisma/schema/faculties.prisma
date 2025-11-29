@@ -1,10 +1,15 @@
 model Faculty {
   id           String    @id @default(uuid())
-  nameEn       String
-  nameAr       String
-  code         String    @unique
-  descriptionEn String?
+
+  // Main language: English (default)
+  name         String
+  description  String?
+
+  // Optional Arabic fields
+  nameAr       String?
   descriptionAr String?
+
+  code         String    @unique
   isActive     Boolean   @default(true) @map("is_active")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")

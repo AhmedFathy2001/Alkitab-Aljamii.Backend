@@ -5,7 +5,7 @@ export class FacultyResponseDto {
   id!: string;
 
   @ApiProperty({ example: 'Faculty of Engineering' })
-  nameEn!: string;
+  name!: string;
 
   @ApiProperty({ example: 'كلية الهندسة' })
   nameAr!: string;
@@ -14,7 +14,7 @@ export class FacultyResponseDto {
   code!: string;
 
   @ApiPropertyOptional({ example: 'Engineering and Technology faculty' })
-  descriptionEn?: string | null;
+  description?: string | null;
 
   @ApiPropertyOptional({ example: 'كلية الهندسة والتكنولوجيا' })
   descriptionAr?: string | null;

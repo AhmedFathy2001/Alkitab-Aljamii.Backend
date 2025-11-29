@@ -23,14 +23,14 @@ export class SubjectService {
 
     const subject = await this.prisma.subject.create({
       data: {
-        nameEn: dto.nameEn,
+        name: dto.name,
         nameAr: dto.nameAr,
         code: dto.code,
         facultyId: dto.facultyId,
-        descriptionEn: dto.descriptionEn ?? null,
+        description: dto.description ?? null,
         descriptionAr: dto.descriptionAr ?? null,
       },
-      include: { faculty: { select: { nameEn: true, nameAr: true } } },
+      include: { faculty: { select: { name: true, nameAr: true } } },
     });
 
     return this.toResponse(subject);
@@ -53,7 +53,7 @@ export class SubjectService {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          faculty: { select: { nameEn: true, nameAr: true } },
+          faculty: { select: { name: true, nameAr: true } },
           _count: { select: { assignments: true } },
         },
       }),
@@ -80,7 +80,7 @@ export class SubjectService {
     const subject = await this.prisma.subject.findUnique({
       where: { id },
       include: {
-        faculty: { select: { nameEn: true, nameAr: true } },
+        faculty: { select: { name: true, nameAr: true } },
         _count: { select: { assignments: true } },
       },
     });
@@ -109,15 +109,15 @@ export class SubjectService {
     const updated = await this.prisma.subject.update({
       where: { id },
       data: {
-        nameEn: dto.nameEn ?? subject.nameEn,
+        name: dto.name ?? subject.name,
         nameAr: dto.nameAr ?? subject.nameAr,
         code: dto.code ?? subject.code,
-        descriptionEn: dto.descriptionEn ?? subject.descriptionEn,
+        description: dto.description ?? subject.description,
         descriptionAr: dto.descriptionAr ?? subject.descriptionAr,
         isActive: dto.isActive ?? subject.isActive,
       },
       include: {
-        faculty: { select: { nameEn: true, nameAr: true } },
+        faculty: { select: { name: true, nameAr: true } },
       },
     });
 
@@ -198,7 +198,7 @@ export class SubjectService {
 
     if (search) {
       where['OR'] = [
-        { nameEn: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
         { nameAr: { contains: search, mode: 'insensitive' } },
         { code: { contains: search, mode: 'insensitive' } },
       ];
@@ -259,12 +259,12 @@ export class SubjectService {
   private toResponse(subject: any): SubjectResponseDto {
     return {
       id: subject.id,
-      nameEn: subject.nameEn,
+      name: subject.name,
       nameAr: subject.nameAr,
       code: subject.code,
       facultyId: subject.facultyId,
       facultyName: subject.faculty?.nameEn,
-      descriptionEn: subject.descriptionEn ?? undefined,
+      description: subject.description ?? undefined,
       descriptionAr: subject.descriptionAr ?? undefined,
       isActive: subject.isActive,
       professorCount: subject._count?.assignments,

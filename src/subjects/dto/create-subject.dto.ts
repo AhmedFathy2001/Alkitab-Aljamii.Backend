@@ -12,7 +12,7 @@ export class CreateSubjectDto {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  nameEn!: string;
+  name!: string;
 
   @ApiProperty({ description: 'Subject name in Arabic' })
   @IsString()
@@ -34,7 +34,7 @@ export class CreateSubjectDto {
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  descriptionEn?: string;
+  description?: string;
 
   @ApiPropertyOptional({ description: 'Subject description in Arabic' })
   @IsOptional()

@@ -2,7 +2,7 @@
 
 export interface UserFacultyDto {
   id: string;
-  nameEn: string;
+  name: string;
   nameAr: string;
   code: string;
   role: 'faculty_admin' | 'professor' | 'student';
@@ -10,10 +10,10 @@ export interface UserFacultyDto {
 
 export interface UserSubjectDto {
   id: string;
-  nameEn: string;
+  name: string;
   nameAr: string;
   code: string;
-  facultyNameEn: string;
+  facultyName: string;
   facultyNameAr: string;
 }
 
@@ -33,14 +33,14 @@ export type ViewRole =
 export interface AvailableView {
   role: ViewRole;
   facultyId?: string;
-  facultyNameEn?: string;
+  facultyName?: string;
   facultyNameAr?: string;
 }
 
 export interface AvailableViewsDto {
   primaryRole: ViewRole;
   primaryFacultyId?: string;
-  primaryFacultyNameEn?: string;
+  primaryFacultyName?: string;
   primaryFacultyNameAr?: string;
   availableViews: AvailableView[];
 }

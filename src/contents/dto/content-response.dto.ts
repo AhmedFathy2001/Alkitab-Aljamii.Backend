@@ -1,10 +1,10 @@
 export class ContentResponseDto {
   id!: string;
 
-  titleEn!: string;
+  title!: string;
   titleAr!: string;
 
-  descriptionEn!: string;
+  description!: string;
   descriptionAr!: string;
 
   filePath!: string;
@@ -26,7 +26,7 @@ export class ContentResponseDto {
    * @param lang 'en' | 'ar'
    */
   getTitle(lang: 'en' | 'ar') {
-    return lang === 'ar' ? this.titleAr : this.titleEn;
+    return lang === 'ar' ? this.titleAr : this.title;
   }
 
   /**
@@ -34,7 +34,7 @@ export class ContentResponseDto {
    * @param lang 'en' | 'ar'
    */
   getDescription(lang: 'en' | 'ar') {
-    return lang === 'ar' ? this.descriptionAr : this.descriptionEn;
+    return lang === 'ar' ? this.descriptionAr : this.description;
   }
 }
 

@@ -3,15 +3,13 @@ model Content {
   subjectId       String        @map("subject_id")
   uploadedById    String        @map("uploaded_by")
 
-  // Localization fields
-  titleEn         String
-  titleAr         String
-  descriptionEn   String?       @map("description_en")
-  descriptionAr   String?       @map("description_ar")
+  // Main language: English (default)
+  title           String
+  description     String
 
-  // Old fields (optional, can remove later if not needed)
-  title           String?
-  description     String?
+  // Optional Arabic fields
+  titleAr         String?
+  descriptionAr   String?       @map("description_ar")
 
   filePath        String        @map("file_path")
   fileName        String        @map("file_name")
@@ -39,6 +37,7 @@ model Content {
   @@index([status])
   @@map("contents")
 }
+
 
 model ContentApproval {
   id         String         @id @default(uuid())

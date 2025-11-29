@@ -1,0 +1,12 @@
+{
+  "FILE_NOT_FOUND": "الملف غير موجود في التخزين",
+  "PAGINATED_ONLY_FOR_PDF": "البث الجزئي متاح فقط لملفات PDF",
+  "CONTENT_NOT_FOUND": "المحتوى غير موجود",
+  "PAGE_COUNT_ONLY_PDF": "عدد الصفحات متاح فقط للملفات بصيغة PDF",
+  "LOG_CALCULATED_PAGE_COUNT": "تم حساب عدد الصفحات: {{pageCount}} صفحة",
+  "LOG_FAILED_PAGE_COUNT": "فشل حساب عدد الصفحات: {{error}}",
+  "LOG_CALCULATING_PAGE_COUNT": "جارٍ حساب عدد الصفحات للمحتوى {{id}}",
+  "LOG_STORED_PAGE_COUNT": "تم تخزين عدد الصفحات {{pageCount}} للمحتوى {{id}}",
+  "LOG_FAILED_STORE_PAGE_COUNT": "فشل تخزين عدد الصفحات للمحتوى {{id}}: {{error}}"
+  }
+  

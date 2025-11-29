@@ -5,7 +5,7 @@ export class SubjectResponseDto {
   id!: string;
 
   @ApiProperty({ example: 'Mathematics', description: 'Subject name in English' })
-  nameEn!: string;
+  name!: string;
 
   @ApiProperty({ example: 'الرياضيات', description: 'Subject name in Arabic' })
   nameAr!: string;
@@ -20,7 +20,7 @@ export class SubjectResponseDto {
   facultyName?: string | undefined;
 
   @ApiPropertyOptional({ example: 'Description in English' })
-  descriptionEn?: string | undefined;
+  description?: string | undefined;
 
   @ApiPropertyOptional({ example: 'الوصف بالعربية' })
   descriptionAr?: string | undefined;

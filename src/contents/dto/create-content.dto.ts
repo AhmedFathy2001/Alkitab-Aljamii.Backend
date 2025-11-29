@@ -11,7 +11,7 @@ export class CreateContentDto {
   @ApiProperty({ description: 'Content title in English', maxLength: 200 })
   @IsString()
   @MaxLength(200)
-  titleEn!: string;
+  title!: string;
 
   @ApiProperty({ description: 'Content title in Arabic', maxLength: 200 })
   @IsString()
@@ -22,7 +22,7 @@ export class CreateContentDto {
   @IsString()
   @IsOptional()
   @MaxLength(500)
-  descriptionEn?: string;
+  description?: string;
 
   @ApiPropertyOptional({ description: 'Content description in Arabic', maxLength: 500 })
   @IsString()

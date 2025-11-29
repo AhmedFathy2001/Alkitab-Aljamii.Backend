@@ -1,0 +1,10 @@
+{   
+    "NOT_FOUND": "Subject not found",
+    "ASSIGNMENT_NOT_FOUND": "Assignment not found",
+    "USER_NOT_FOUND": "User not found",
+    "NO_ACCESS": "No access to this subject",
+    "NO_WRITE_ACCESS": "No write access to this subject",
+    "USER_ALREADY_ASSIGNED": "User already assigned to this subject",
+    "USER_FACULTY_ROLE_INVALID_PROFESSOR": "User must have professor or faculty admin role in this faculty",
+    "USER_FACULTY_ROLE_INVALID_STUDENT": "User must have student role in this faculty"
+}

@@ -9,7 +9,7 @@ export class CreateFacultyDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  nameEn!: string;
+  name!: string;
 
   @ApiProperty({
     example: 'كلية الهندسة',
@@ -33,7 +33,7 @@ export class CreateFacultyDto {
   @IsString()
   @IsOptional()
   @MaxLength(500)
-  descriptionEn?: string;
+  description?: string;
 
   @ApiPropertyOptional({
     example: 'كلية الهندسة والتكنولوجيا',

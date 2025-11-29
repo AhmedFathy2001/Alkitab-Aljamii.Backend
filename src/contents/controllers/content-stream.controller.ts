@@ -29,6 +29,7 @@ import {
   CurrentUser,
   type JwtPayload,
 } from '../../common/decorators/current-user.decorator.js';
+import { I18nService } from 'nestjs-i18n';
 
 @ApiTags('Content Streaming')
 @ApiBearerAuth()
@@ -43,6 +44,7 @@ export class ContentStreamController {
     private readonly pdfPagesService: PdfPagesService,
     private readonly contentAccessService: ContentAccessService,
     private readonly prisma: PrismaService,
+    private readonly i18n: I18nService, // إضافة i18n
   ) {}
 
   @Get('stream')
@@ -106,7 +108,9 @@ export class ContentStreamController {
       return new StreamableFile(Readable.from(finalBuffer));
     } catch (error) {
       this.logger.error(`Failed to stream content ${id}:`, error);
-      throw new NotFoundException('File not found in storage');
+      throw new NotFoundException(
+        await this.i18n.translate('content.FILE_NOT_FOUND'),
+      );
     }
   }
 
@@ -142,7 +146,7 @@ export class ContentStreamController {
 
       if (!this.pdfWatermarkService.isPdf(mimeType)) {
         throw new NotFoundException(
-          'Paginated streaming only available for PDFs',
+          await this.i18n.translate('content.PAGINATED_ONLY_FOR_PDF'),
         );
       }
 
@@ -191,7 +195,9 @@ export class ContentStreamController {
     } catch (error) {
       this.logger.error(`Failed to get pages for content ${id}:`, error);
       if (error instanceof NotFoundException) throw error;
-      throw new NotFoundException('File not found in storage');
+      throw new NotFoundException(
+        await this.i18n.translate('content.FILE_NOT_FOUND'),
+      );
     }
   }
 

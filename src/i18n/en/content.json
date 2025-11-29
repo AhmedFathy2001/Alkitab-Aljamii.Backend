@@ -1,0 +1,13 @@
+{
+    "FILE_NOT_FOUND": "File not found in storage",
+    "PAGINATED_ONLY_FOR_PDF": "Paginated streaming only available for PDFs",
+    "CONTENT_NOT_FOUND": "Content not found",
+    "PAGE_COUNT_ONLY_PDF": "Page count only available for PDFs",
+    "LOG_CALCULATED_PAGE_COUNT": "Calculated page count: {{pageCount}} pages",
+    "LOG_FAILED_PAGE_COUNT": "Failed to calculate page count: {{error}}",
+    "LOG_CALCULATING_PAGE_COUNT": "Calculating page count for content {{id}}",
+    "LOG_STORED_PAGE_COUNT": "Stored page count {{pageCount}} for content {{id}}",
+    "LOG_FAILED_STORE_PAGE_COUNT": "Failed to store page count for {{id}}: {{error}}"
+  }
+  
+  

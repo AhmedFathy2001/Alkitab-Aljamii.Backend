@@ -1,0 +1,17 @@
+{
+    "NO_ACCESS": "You do not have access to this faculty",
+    "ONLY_SUPER_ADMIN": "Only super admins can perform this action",
+    "USER_NOT_FOUND": "User not found or cannot be a faculty admin",
+    "ONLY_FACULTY_ADMIN": "Only faculty admins can perform this action",
+    "STUDENT_ALREADY_ASSIGNED": "This student is already assigned to a faculty",
+    "ROLE_NOT_ASSIGNED": "The role '{{role}}' is not assigned to this faculty",
+    "ONLY_SUPER_ADMIN_CAN_ASSIGN": "Only super admins can assign faculty admins",
+    "ONLY_SUPER_ADMIN_CAN_REMOVE": "Only super admins can remove faculty admins",
+    "NO_WRITE_ACCESS": "You do not have write access to this faculty",
+    "NO_READ_ACCESS": "You do not have read access to this faculty",
+    "CANNOT_BE_ROLE": "This user cannot be assigned the role '{{role}}' in this faculty",
+    "NOT_FOUND": "Faculty not found",
+    "CODE_EXISTS": "Faculty code already exists",
+    "NOT_DELETED": "Faculty is not deleted"
+  }
+  

@@ -9,9 +9,6 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
-  $transaction(arg0: (tx: any) => Promise<{ user: any; roleRecord: any; }>) {
-    throw new Error('Method not implemented.');
-  }
   private readonly pool: pg.Pool;
   userFacultyRole: any;
   user: any;
@@ -22,6 +19,7 @@ export class PrismaService
   content: any;
   contentAccessLog: any;
   contentApproval: any;
+
   constructor(configService: ConfigService) {
     const databaseUrl = configService.get<string>('DATABASE_URL');
     const pool = new pg.Pool({ connectionString: databaseUrl });

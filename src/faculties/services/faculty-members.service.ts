@@ -19,6 +19,8 @@ import {
   queryFacultyMembers,
   mapToFacultyMemberDto,
 } from '../utils/member-queries.js';
+import type { Prisma } from '@prisma/client/extension';
+import type {  User } from '@prisma/client';
 
 export interface CreateMemberDto {
   email: string;
@@ -68,13 +70,10 @@ export class FacultyMembersService {
     if (existingUser) {
       await validateUserCanBeRole(this.prisma, existingUser, role, facultyId);
 
-      // Students can only belong to one faculty
       if (role === 'student') {
-        const existingStudentRole = await this.prisma.userFacultyRole.findFirst(
-          {
-            where: { userId: existingUser.id, role: 'student' },
-          },
-        );
+        const existingStudentRole = await this.prisma.userFacultyRole.findFirst({
+          where: { userId: existingUser.id, role: 'student' },
+        });
         if (existingStudentRole) {
           throw new ConflictException(
             'This student is already assigned to a faculty',
@@ -91,23 +90,26 @@ export class FacultyMembersService {
 
     // Create new user
     const passwordHash = await bcrypt.hash(dto.password, 10);
-    const result = await this.prisma.$transaction(async (tx: { user: { create: (arg0: { data: { email: string; firstName: string; lastName: string; passwordHash: string; isActive: boolean; }; }) => any; }; userFacultyRole: { create: (arg0: { data: { userId: any; facultyId: string; role: "professor" | "student"; }; }) => any; }; }) => {
-      const user = await tx.user.create({
-        data: {
-          email: dto.email.toLowerCase().trim(),
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          passwordHash,
-          isActive: true,
-        },
-      });
 
-      const roleRecord = await tx.userFacultyRole.create({
-        data: { userId: user.id, facultyId, role },
-      });
+    const result = await this.prisma['$transaction'](
+      async (tx: Prisma.TransactionClient) => {
+        const user = await tx.user.create({
+          data: {
+            email: dto.email.toLowerCase().trim(),
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            passwordHash,
+            isActive: true,
+          },
+        });
 
-      return { user, roleRecord };
-    });
+        const roleRecord = await tx.userFacultyRole.create({
+          data: { userId: user.id, facultyId, role },
+        });
+
+        return { user, roleRecord };
+      },
+    );
 
     return mapToFacultyMemberDto(result.user, result.roleRecord.createdAt);
   }
@@ -141,7 +143,6 @@ export class FacultyMembersService {
     validateUserNotFound(user);
     await validateUserCanBeRole(this.prisma, user, 'student', facultyId);
 
-    // Students can only belong to one faculty
     const existingStudentRole = await this.prisma.userFacultyRole.findFirst({
       where: { userId: studentId, role: 'student' },
     });
@@ -193,7 +194,6 @@ export class FacultyMembersService {
     await this.prisma.userFacultyRole.delete({ where: { id: roleRecord.id } });
   }
 
-  // Faculty Admin management
   async getFacultyAdmins(
     facultyId: string,
     currentUser: JwtPayload,
@@ -216,7 +216,10 @@ export class FacultyMembersService {
       orderBy: { createdAt: 'asc' },
     });
 
-    return roles.map((r: { user: { id: string; email: string; firstName: string; lastName: string; isActive: boolean; }; createdAt: Date; }) => mapToFacultyMemberDto(r.user, r.createdAt));
+    return roles.map(
+      (r: { user: User; createdAt: Date }) =>
+        mapToFacultyMemberDto(r.user, r.createdAt),
+    );
   }
 
   async addFacultyAdmin(

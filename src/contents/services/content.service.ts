@@ -1,8 +1,6 @@
 import { Injectable, Inject, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import {
-  STORAGE_SERVICE,
-} from '../../storage/storage.interface.js';
+import { STORAGE_SERVICE } from '../../storage/storage.interface.js';
 import type { IStorageService } from '../../storage/storage.interface.js';
 import { PdfPagesService } from './pdf-pages.service.js';
 import { CreateContentDto } from '../dto/create-content.dto.js';
@@ -10,6 +8,7 @@ import { ContentResponseDto, PaginatedContentResponseDto } from '../dto/content-
 import { ContentType } from '@prisma/client/index-browser';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
 import { mapToContentResponse } from '../utils/content-mapper.js';
+import { I18nService } from 'nestjs-i18n';
 
 type UploadedFileType = {
   fieldname: string;
@@ -35,6 +34,7 @@ export class ContentService {
     private readonly prisma: PrismaService,
     @Inject(STORAGE_SERVICE) storageService: IStorageService,
     private readonly pdfPagesService: PdfPagesService,
+    private readonly i18n: I18nService,
   ) {
     this.storage = storageService;
   }
@@ -55,17 +55,17 @@ export class ContentService {
     if (file.mimetype === 'application/pdf') {
       try {
         pageCount = await this.pdfPagesService.getPageCount(file.buffer);
-        this.logger.log(`Calculated page count for upload: ${pageCount} pages`);
+        this.logger.log(await this.i18n.translate('content.LOG_CALCULATED_PAGE_COUNT', { args: { pageCount } }));
       } catch (err) {
-        this.logger.warn(`Failed to calculate page count during upload: ${String(err)}`);
+        this.logger.warn(await this.i18n.translate('content.LOG_FAILED_PAGE_COUNT', { args: { error: String(err) } }));
       }
     }
 
     const content = await this.prisma.content.create({
       data: {
-        titleEn: dto.titleEn,
+        title: dto.title,
         titleAr: dto.titleAr,
-        descriptionEn: dto.descriptionEn ?? '',
+        description: dto.description ?? '',
         descriptionAr: dto.descriptionAr ?? '',
         filePath: uploadResult.key,
         fileName: file.originalname,
@@ -78,15 +78,14 @@ export class ContentService {
         subjectId: dto.subjectId,
       },
       include: {
-        subject: { select: { nameEn: true, nameAr: true } },
+        subject: { select: { name: true, nameAr: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
 
-    // تحويل subject لـ الشكل المطلوب
     const mappedContent = {
       ...content,
-      subject: { name: `${content.subject.nameEn} / ${content.subject.nameAr}` },
+      subject: { name: `${content.subject.name} / ${content.subject.nameAr}` },
     };
 
     return mapToContentResponse(mappedContent);
@@ -117,7 +116,7 @@ export class ContentService {
         where: { userId },
         select: { subjectId: true },
       });
-      const enrolledSubjectIds = assignments.map((a: { subjectId: any; }) => a.subjectId);
+      const enrolledSubjectIds = assignments.map((a: { subjectId: string }) => a.subjectId);
 
       if (subjectId) {
         if (!enrolledSubjectIds.includes(subjectId))
@@ -131,14 +130,14 @@ export class ContentService {
       where,
       orderBy: { createdAt: 'desc' },
       include: {
-        subject: { select: { nameEn: true, nameAr: true, facultyId: true } },
+        subject: { select: { name: true, nameAr: true, facultyId: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
 
-    const mappedContents = contents.map((c: { subject: { nameEn: any; nameAr: any; }; }) => ({
+    const mappedContents = contents.map((c: { subject: { name: string; nameAr: string } }) => ({
       ...c,
-      subject: { name: `${c.subject.nameEn} / ${c.subject.nameAr}` },
+      subject: { name: `${c.subject.name} / ${c.subject.nameAr}` },
     }));
 
     return { data: mappedContents.map(mapToContentResponse), total: contents.length };
@@ -148,16 +147,16 @@ export class ContentService {
     const content = await this.prisma.content.findUnique({
       where: { id },
       include: {
-        subject: { select: { nameEn: true, nameAr: true } },
+        subject: { select: { name: true, nameAr: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
 
-    if (!content) throw new NotFoundException('Content not found');
+    if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
 
     const mappedContent = {
       ...content,
-      subject: { name: `${content.subject.nameEn} / ${content.subject.nameAr}` },
+      subject: { name: `${content.subject.name} / ${content.subject.nameAr}` },
     };
 
     return mapToContentResponse(mappedContent);
@@ -168,14 +167,14 @@ export class ContentService {
       where: { id },
       data: { status: 'approved', approvedById, approvedAt: new Date() },
       include: {
-        subject: { select: { nameEn: true, nameAr: true } },
+        subject: { select: { name: true, nameAr: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
 
     const mappedContent = {
       ...content,
-      subject: { name: `${content.subject.nameEn} / ${content.subject.nameAr}` },
+      subject: { name: `${content.subject.name} / ${content.subject.nameAr}` },
     };
 
     await this.prisma.contentApproval.create({
@@ -194,14 +193,14 @@ export class ContentService {
       where: { id },
       data: { status: 'rejected', rejectionReason: reason ?? null },
       include: {
-        subject: { select: { nameEn: true, nameAr: true } },
+        subject: { select: { name: true, nameAr: true } },
         uploadedBy: { select: { firstName: true, lastName: true } },
       },
     });
 
     const mappedContent = {
       ...content,
-      subject: { name: `${content.subject.nameEn} / ${content.subject.nameAr}` },
+      subject: { name: `${content.subject.name} / ${content.subject.nameAr}` },
     };
 
     await this.prisma.contentApproval.create({
@@ -218,7 +217,7 @@ export class ContentService {
 
   async deleteContent(id: string): Promise<void> {
     const content = await this.prisma.content.findUnique({ where: { id } });
-    if (!content) throw new NotFoundException('Content not found');
+    if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
     await this.storage.deleteFile(content.filePath);
     await this.prisma.content.delete({ where: { id } });
   }
@@ -228,7 +227,7 @@ export class ContentService {
       where: { id },
       select: { filePath: true, fileName: true, mimeType: true },
     });
-    if (!content) throw new NotFoundException('Content not found');
+    if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
     return content as ContentFileInfo;
   }
 
@@ -258,9 +257,9 @@ export class ContentService {
       select: { id: true, pageCount: true, mimeType: true, filePath: true },
     });
 
-    if (!content) throw new NotFoundException('Content not found');
+    if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
     if (content.mimeType !== 'application/pdf') {
-      throw new NotFoundException('Page count only available for PDFs');
+      throw new NotFoundException(await this.i18n.translate('content.PAGE_COUNT_ONLY_PDF'));
     }
 
     if (content.pageCount !== null) {
@@ -270,14 +269,18 @@ export class ContentService {
       };
     }
 
-    this.logger.log(`Calculating page count for existing content: ${id}`);
+    this.logger.log(await this.i18n.translate('content.LOG_CALCULATING_PAGE_COUNT', { args: { id } }));
     const buffer: Buffer = await this.storage.getFileBuffer(content.filePath);
     const pageCount = await this.pdfPagesService.getPageCount(buffer);
 
     this.prisma.content
       .update({ where: { id }, data: { pageCount } })
-      .then(() => this.logger.log(`Stored page count ${pageCount} for content ${id}`))
-      .catch((err: any) => this.logger.warn(`Failed to store page count for ${id}: ${err}`));
+      .then(async () =>
+        this.logger.log(await this.i18n.translate('content.LOG_STORED_PAGE_COUNT', { args: { pageCount, id } })),
+      )
+      .catch(async (err: any) =>
+        this.logger.warn(await this.i18n.translate('content.LOG_FAILED_STORE_PAGE_COUNT', { args: { id, error: String(err) } })),
+      );
 
     return {
       totalPages: pageCount,

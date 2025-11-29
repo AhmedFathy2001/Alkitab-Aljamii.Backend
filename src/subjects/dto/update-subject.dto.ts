@@ -13,7 +13,7 @@ export class UpdateSubjectDto {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  nameEn?: string;
+  name?: string;
 
   @ApiPropertyOptional({ description: 'Subject name in Arabic' })
   @IsOptional()
@@ -33,7 +33,7 @@ export class UpdateSubjectDto {
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  descriptionEn?: string;
+  description?: string;
 
   @ApiPropertyOptional({ description: 'Subject description in Arabic' })
   @IsOptional()

@@ -1,13 +1,11 @@
-import { Prisma } from "@prisma/client/extension";
+import { Prisma } from "@prisma/client";
 
 export function buildSuperAdminFilter(
   facultyId?: string,
   subjectId?: string,
 ): Prisma.UserWhereInput {
   if (facultyId) {
-    return {
-      facultyRoles: { some: { facultyId } },
-    };
+    return { facultyRoles: { some: { facultyId } } };
   }
   if (subjectId) {
     return { subjectAssignments: { some: { subjectId } } };
@@ -20,11 +18,9 @@ export function buildFacultyAdminFilterForFaculty(
   allowedFacultyIds: string[],
 ): Prisma.UserWhereInput {
   if (!allowedFacultyIds.includes(facultyId)) {
-    return { id: 'none' };
+    return { AND: [{ id: { equals: '' } }] }; // بديل عن 'none'
   }
-  return {
-    facultyRoles: { some: { facultyId } },
-  };
+  return { facultyRoles: { some: { facultyId } } };
 }
 
 export function buildFacultyAdminDefaultFilter(
@@ -47,7 +43,6 @@ export function buildProfessorFilterForSubject(
     OR: [
       { id: professorId },
       {
-        // Only show students enrolled in this subject
         subjectAssignments: {
           some: { subjectId, roleInSubject: 'student' },
         },
@@ -64,7 +59,6 @@ export function buildProfessorDefaultFilter(
     OR: [
       { id: professorId },
       {
-        // Only show students enrolled in professor's subjects
         subjectAssignments: {
           some: {
             subjectId: { in: allowedSubjectIds },

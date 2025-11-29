@@ -17,28 +17,35 @@ import type {
   SwitchContextResponseDto,
 } from '../dto/switch-context.dto.js';
 import type { JwtPayload } from '../strategies/jwt.strategy.js';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tokenService: TokenService,
+    private readonly i18n: I18nService, // <-- i18n injected
   ) {}
 
   async login(dto: LoginDto, deviceInfo?: string): Promise<AuthResponseDto> {
     const user = await this.validateCredentials(dto.email, dto.password);
 
-    // Get user's faculty roles for initial context
     const facultyRoles = await this.prisma.userFacultyRole.findMany({
       where: { userId: user.id },
-      include: { faculty: { select: { id: true, nameEn: true, nameAr: true } } },
+      include: {
+        faculty: {
+          select: {
+            id: true,
+            name: true,
+            nameAr: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'asc' },
     });
 
-    // Determine initial context
     let initialContext: { activeView?: string; facultyId?: string } = {};
     if (!user.isSuperAdmin && facultyRoles.length > 0) {
-      // Set initial context to first role
       const firstRole = facultyRoles[0]!;
       initialContext = {
         activeView: firstRole.role,
@@ -68,13 +75,16 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         isSuperAdmin: user.isSuperAdmin,
-        facultyRoles: facultyRoles.map((fr: { facultyId: any; faculty: { nameEn: any; nameAr: any; }; role: any; }) => ({
+        facultyRoles: facultyRoles.map((fr: {
+          facultyId: string;
+          faculty: { name: string; nameAr?: string };
+          role: any;
+        }) => ({
           facultyId: fr.facultyId,
-          nameEn: fr.faculty.nameEn ?? '',  
-          nameAr: fr.faculty.nameAr ?? '', 
+          name: fr.faculty.name,
+          nameAr: fr.faculty.nameAr,
           role: fr.role,
         })),
-        
       },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -88,7 +98,9 @@ export class AuthService {
       await this.tokenService.findAndValidateRefreshToken(refreshToken);
 
     if (!storedToken) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      throw new UnauthorizedException(
+        await this.i18n.translate('auth.INVALID_REFRESH_TOKEN'),
+      );
     }
 
     const user = await this.prisma.user.findFirst({
@@ -96,7 +108,9 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found or inactive');
+      throw new UnauthorizedException(
+        await this.i18n.translate('auth.USER_NOT_FOUND_OR_INACTIVE'),
+      );
     }
 
     await this.tokenService.revokeRefreshToken(storedToken.id);
@@ -144,7 +158,7 @@ export class AuthService {
 
     if (currentUser.isSuperAdmin) {
       throw new ForbiddenException(
-        'Super admin does not use context switching',
+        await this.i18n.translate('auth.SUPER_ADMIN_NO_SWITCH'),
       );
     }
 
@@ -158,7 +172,7 @@ export class AuthService {
 
     if (!facultyRole) {
       throw new ForbiddenException(
-        `You do not have ${dto.activeView} access in this faculty`,
+        await this.i18n.translate('auth.NO_ACCESS_IN_FACULTY', { args: { role: dto.activeView } }),
       );
     }
 
@@ -166,7 +180,9 @@ export class AuthService {
       where: { id: dto.facultyId, isActive: true, deletedAt: null },
     });
     if (!faculty) {
-      throw new ForbiddenException('Faculty is not active');
+      throw new ForbiddenException(
+        await this.i18n.translate('auth.FACULTY_NOT_ACTIVE'),
+      );
     }
 
     const user = await this.prisma.user.findFirstOrThrow({
@@ -208,13 +224,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(
+        await this.i18n.translate('auth.INVALID_CREDENTIALS'),
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(
+        await this.i18n.translate('auth.INVALID_CREDENTIALS'),
+      );
     }
 
     return user;
@@ -227,3 +247,4 @@ export class AuthService {
     });
   }
 }
+

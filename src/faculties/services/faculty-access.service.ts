@@ -7,27 +7,30 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '@prisma/client/index-browser';
 import type { Faculty } from '@prisma/client/index-browser';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class FacultyAccessService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly i18n: I18nService,
+  ) {}
 
   async buildRoleFilter(
     currentUser: JwtPayload,
   ): Promise<Prisma.FacultyWhereInput> {
-    // Super admin sees all faculties
     if (currentUser.isSuperAdmin) return {};
 
-    // For non-super-admins, filter to faculties they have roles in
     const userFacultyRoles = await this.prisma.userFacultyRole.findMany({
       where: { userId: currentUser.sub },
       select: { facultyId: true },
     });
 
-    const facultyIds = userFacultyRoles.map((r: { facultyId: any; }) => r.facultyId);
+    const facultyIds = userFacultyRoles.map((r: { facultyId: string }) => r.facultyId);
 
     if (facultyIds.length === 0) {
-      return { id: 'none' }; // No access to any faculty
+      // لن يتمكن من الوصول لأي كلية
+      return { id: 'none' };
     }
 
     return { id: { in: facultyIds } };
@@ -36,11 +39,10 @@ export class FacultyAccessService {
   async validateReadAccess(
     currentUser: JwtPayload,
     faculty: Faculty,
+    lang?: string,
   ): Promise<void> {
-    // Super admin can access everything
     if (currentUser.isSuperAdmin) return;
 
-    // Check if user has any role in this faculty
     const hasRole = await this.prisma.userFacultyRole.findFirst({
       where: {
         userId: currentUser.sub,
@@ -48,38 +50,42 @@ export class FacultyAccessService {
       },
     });
 
-    if (hasRole) return;
-
-    throw new ForbiddenException('You do not have access to this faculty');
-  }
-
-  validateSuperAdminAccess(currentUser: JwtPayload): void {
-    if (!currentUser.isSuperAdmin) {
-      throw new ForbiddenException('Only super admins can perform this action');
+    if (!hasRole) {
+      const message = await this.i18n.translate('faculty.NO_ACCESS', {
+        lang: lang ?? 'en',
+      });
+      throw new ForbiddenException(message);
     }
   }
 
-  async validateAdminUser(adminId: string): Promise<void> {
-    // Validate user exists and is not a super admin (super admins can't be faculty admins)
+  validateSuperAdminAccess(currentUser: JwtPayload, lang?: string): void {
+    if (!currentUser.isSuperAdmin) {
+      throw new ForbiddenException(
+        this.i18n.translate('faculty.ONLY_SUPER_ADMIN', { lang: lang ?? 'en' }),
+      );
+    }
+  }
+
+  async validateAdminUser(adminId: string, lang?: string): Promise<void> {
     const user = await this.prisma.user.findFirst({
       where: { id: adminId, deletedAt: null, isSuperAdmin: false },
     });
 
     if (!user) {
-      throw new NotFoundException(
-        'User not found or cannot be a faculty admin',
-      );
+      const message = await this.i18n.translate('faculty.USER_NOT_FOUND', {
+        lang: lang ?? 'en',
+      });
+      throw new NotFoundException(message);
     }
   }
 
   async validateWriteAccess(
     currentUser: JwtPayload,
     facultyId: string,
+    lang?: string,
   ): Promise<void> {
-    // Super admin can write to any faculty
     if (currentUser.isSuperAdmin) return;
 
-    // Check if user is faculty_admin for this faculty
     const isFacultyAdmin = await this.prisma.userFacultyRole.findFirst({
       where: {
         userId: currentUser.sub,
@@ -89,9 +95,10 @@ export class FacultyAccessService {
     });
 
     if (!isFacultyAdmin) {
-      throw new ForbiddenException(
-        'Only faculty admins can perform this action',
-      );
+      const message = await this.i18n.translate('faculty.ONLY_FACULTY_ADMIN', {
+        lang: lang ?? 'en',
+      });
+      throw new ForbiddenException(message);
     }
   }
 }

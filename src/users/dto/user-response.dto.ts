@@ -6,7 +6,7 @@ export class UserFacultyRoleDto {
   facultyId!: string;
 
   @ApiProperty({ example: 'Faculty of Engineering' })
-  facultyNameEn!: string;
+  facultyName!: string;
 
   @ApiProperty({ example: 'كلية الهندسة' })
   facultyNameAr!: string;

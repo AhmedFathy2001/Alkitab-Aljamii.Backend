@@ -5,6 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { RefreshToken } from '@prisma/client/index-browser';
 import type { JwtConfig } from '../../config/configuration.js';
+import { randomUUID } from 'crypto';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class TokenService {
@@ -14,6 +16,7 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly i18n: I18nService, // <-- i18n injected
   ) {
     const config = this.configService.get<JwtConfig>('jwt');
     if (!config) {
@@ -45,19 +48,15 @@ export class TokenService {
       email,
       isSuperAdmin,
     };
-    if (context?.activeView) {
-      payload['activeView'] = context.activeView;
-    }
-    if (context?.facultyId) {
-      payload['facultyId'] = context.facultyId;
-    }
+    if (context?.activeView) payload['activeView'] = context.activeView;
+    if (context?.facultyId) payload['facultyId'] = context.facultyId;
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.jwtConfig.accessSecret,
       expiresIn: expiresInSeconds,
     });
 
-    const refreshToken = uuidv4();
+    const refreshToken = randomUUID();
 
     return {
       accessToken,
@@ -82,12 +81,8 @@ export class TokenService {
       email,
       isSuperAdmin,
     };
-    if (context?.activeView) {
-      payload['activeView'] = context.activeView;
-    }
-    if (context?.facultyId) {
-      payload['facultyId'] = context.facultyId;
-    }
+    if (context?.activeView) payload['activeView'] = context.activeView;
+    if (context?.facultyId) payload['facultyId'] = context.facultyId;
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.jwtConfig.accessSecret,
@@ -125,34 +120,22 @@ export class TokenService {
 
     for (const storedToken of tokens) {
       const isValid = await bcrypt.compare(token, storedToken.tokenHash);
-      if (isValid && storedToken.expiresAt > new Date()) {
-        return storedToken;
-      }
+      if (isValid && storedToken.expiresAt > new Date()) return storedToken;
     }
 
     return null;
   }
 
-  /**
-   * Find and validate a refresh token without knowing the userId.
-   * Used for the public refresh endpoint.
-   */
   async findAndValidateRefreshToken(
     token: string,
   ): Promise<RefreshToken | null> {
-    // Get all non-revoked, non-expired tokens
     const tokens = await this.prisma.refreshToken.findMany({
-      where: {
-        isRevoked: false,
-        expiresAt: { gt: new Date() },
-      },
+      where: { isRevoked: false, expiresAt: { gt: new Date() } },
     });
 
     for (const storedToken of tokens) {
       const isValid = await bcrypt.compare(token, storedToken.tokenHash);
-      if (isValid) {
-        return storedToken;
-      }
+      if (isValid) return storedToken;
     }
 
     return null;
@@ -186,7 +169,9 @@ export class TokenService {
   private parseExpiryToSeconds(expiresIn: string): number {
     const match = expiresIn.match(/^(\d+)([smhd])$/);
     if (!match) {
-      throw new Error(`Invalid expiry format: ${expiresIn}`);
+      throw new Error(
+        this.i18n.translate('token.INVALID_EXPIRY_FORMAT', { args: { expiresIn } }),
+      );
     }
 
     const value = parseInt(match[1]!, 10);
@@ -202,11 +187,9 @@ export class TokenService {
       case 'd':
         return value * 24 * 60 * 60;
       default:
-        throw new Error(`Invalid expiry unit: ${unit}`);
+        throw new Error(
+          this.i18n.translate('token.INVALID_EXPIRY_UNIT', { args: { unit } }),
+        );
     }
   }
 }
-function uuidv4() {
-  throw new Error('Function not implemented.');
-}
-

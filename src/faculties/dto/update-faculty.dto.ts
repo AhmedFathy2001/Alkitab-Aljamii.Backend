@@ -15,7 +15,7 @@ export class UpdateFacultyDto {
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  nameEn?: string;
+  name?: string;
 
   @ApiPropertyOptional({
     example: 'كلية الهندسة',
@@ -39,7 +39,7 @@ export class UpdateFacultyDto {
   @IsString()
   @IsOptional()
   @MaxLength(500)
-  descriptionEn?: string;
+  description?: string;
 
   @ApiPropertyOptional({
     example: 'كلية الهندسة والتكنولوجيا',

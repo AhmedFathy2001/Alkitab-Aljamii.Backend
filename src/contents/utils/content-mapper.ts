@@ -4,9 +4,9 @@ import { ContentResponseDto } from '../dto/content-response.dto.js';
 
 export interface ContentWithRelations {
   id: string;
-  titleEn: string;
+  title: string;
   titleAr: string;
-  descriptionEn: string | null;
+  description: string | null;
   descriptionAr: string | null;
   filePath: string;
   fileName: string;
@@ -29,9 +29,9 @@ export function mapToContentResponse(
   const dto = new ContentResponseDto(); // constructor فارغ
 
   dto.id = content.id;
-  dto.titleEn = content.titleEn;
+  dto.title = content.title;
   dto.titleAr = content.titleAr;
-  dto.descriptionEn = content.descriptionEn ?? '';
+  dto.description = content.description ?? '';
   dto.descriptionAr = content.descriptionAr ?? '';
   dto.filePath = content.filePath;
   dto.fileName = content.fileName;
