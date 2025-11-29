@@ -16,6 +16,7 @@ export class ContentResponseDto {
   approvedById!: string | null;
   subjectId!: string;
   subjectName!: string;
+  subjectNameAr!: string;
   uploadedById!: string;
   uploadedByName!: string;
   createdAt!: Date;

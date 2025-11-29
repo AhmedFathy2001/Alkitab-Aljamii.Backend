@@ -15,9 +15,9 @@ export async function getUserAssociationsData(
   const facultyRoles = await prisma.userFacultyRole.findMany({
     where: { userId },
     include: {
-      faculty: { select: { id: true, nameEn: true, nameAr: true, code: true } },
+      faculty: { select: { id: true, name: true, nameAr: true, code: true } },
     },
-    orderBy: { faculty: { nameEn: 'asc' } },
+    orderBy: { faculty: { name: 'asc' } },
   });
 
   const subjectAssignments = await prisma.userSubjectAssignment.findMany({
@@ -26,30 +26,30 @@ export async function getUserAssociationsData(
       subject: {
         select: {
           id: true,
-          nameEn: true,
+          name: true,
           nameAr: true,
           code: true,
-          faculty: { select: { nameEn: true, nameAr: true } },
+          faculty: { select: { name: true, nameAr: true } },
         },
       },
     },
   });
 
   return {
-    faculties: facultyRoles.map((fr: { faculty: { id: any; nameEn: any; nameAr: any; code: any; }; role: any; }) => ({
+    faculties: facultyRoles.map((fr) => ({
       id: fr.faculty.id,
-      nameEn: fr.faculty.nameEn,
-      nameAr: fr.faculty.nameAr,
+      name: fr.faculty.name,
+      nameAr: fr.faculty.nameAr ?? '',
       code: fr.faculty.code,
       role: fr.role,
     })),
-    subjects: subjectAssignments.map((sa: { subject: { id: any; nameEn: any; nameAr: any; code: any; faculty: { nameEn: any; nameAr: any; }; }; }) => ({
+    subjects: subjectAssignments.map((sa) => ({
       id: sa.subject.id,
-      nameEn: sa.subject.nameEn,
-      nameAr: sa.subject.nameAr,
+      name: sa.subject.name,
+      nameAr: sa.subject.nameAr ?? '',
       code: sa.subject.code,
-      facultyNameEn: sa.subject.faculty.nameEn,
-      facultyNameAr: sa.subject.faculty.nameAr,
+      facultyName: sa.subject.faculty.name,
+      facultyNameAr: sa.subject.faculty.nameAr ?? '',
     })),
   };
 }
@@ -64,11 +64,14 @@ export async function getMyFacultiesData(
   if (currentUser.isSuperAdmin) {
     const allFaculties = await prisma.faculty.findMany({
       where: { deletedAt: null, isActive: true },
-      select: { id: true, nameEn: true, nameAr: true, code: true },
-      orderBy: { nameEn: 'asc' },
+      select: { id: true, name: true, nameAr: true, code: true },
+      orderBy: { name: 'asc' },
     });
-    return allFaculties.map((f: any) => ({
-      ...f,
+    return allFaculties.map((f) => ({
+      id: f.id,
+      name: f.name,
+      nameAr: f.nameAr ?? '',
+      code: f.code,
       role: 'faculty_admin' as const,
     }));
   }
@@ -82,15 +85,15 @@ export async function getMyFacultiesData(
       faculty: { deletedAt: null, isActive: true },
     },
     include: {
-      faculty: { select: { id: true, nameEn: true, nameAr: true, code: true } },
+      faculty: { select: { id: true, name: true, nameAr: true, code: true } },
     },
-    orderBy: { faculty: { nameEn: 'asc' } },
+    orderBy: { faculty: { name: 'asc' } },
   });
 
-  return facultyRoles.map((fr: { faculty: { id: any; nameEn: any; nameAr: any; code: any; }; role: any; }) => ({
+  return facultyRoles.map((fr) => ({
     id: fr.faculty.id,
-    nameEn: fr.faculty.nameEn,
-    nameAr: fr.faculty.nameAr,
+    name: fr.faculty.name,
+    nameAr: fr.faculty.nameAr ?? '',
     code: fr.faculty.code,
     role: fr.role,
   }));
@@ -111,25 +114,25 @@ export async function getAvailableViewsData(
 
   const facultyRoles = await prisma.userFacultyRole.findMany({
     where: { userId, faculty: { deletedAt: null, isActive: true } },
-    include: { faculty: { select: { id: true, nameEn: true, nameAr: true } } },
+    include: { faculty: { select: { id: true, name: true, nameAr: true } } },
     orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
   });
 
-  const availableViews: AvailableView[] = facultyRoles.map((fr: { role: string; facultyId: any; faculty: { nameEn: any; nameAr: any; }; }) => ({
+  const availableViews: AvailableView[] = facultyRoles.map((fr) => ({
     role: fr.role as ViewRole,
     facultyId: fr.facultyId,
-    facultyNameEn: fr.faculty.nameEn,
-    facultyNameAr: fr.faculty.nameAr,
+    facultyName: fr.faculty.name,
+    facultyNameAr: fr.faculty.nameAr ?? undefined,
   }));
 
   let primaryRole: ViewRole = 'student';
   let primaryFacultyId: string | undefined;
 
   const firstFacultyAdmin = facultyRoles.find(
-    (fr: { role: string; }) => fr.role === 'faculty_admin',
+    (fr) => fr.role === 'faculty_admin',
   );
-  const firstProfessor = facultyRoles.find((fr: { role: string; }) => fr.role === 'professor');
-  const firstStudent = facultyRoles.find((fr: { role: string; }) => fr.role === 'student');
+  const firstProfessor = facultyRoles.find((fr) => fr.role === 'professor');
+  const firstStudent = facultyRoles.find((fr) => fr.role === 'student');
 
   if (firstFacultyAdmin) {
     primaryRole = 'faculty_admin';

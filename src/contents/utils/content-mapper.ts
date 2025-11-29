@@ -5,7 +5,7 @@ import { ContentResponseDto } from '../dto/content-response.dto.js';
 export interface ContentWithRelations {
   id: string;
   title: string;
-  titleAr: string;
+  titleAr: string | null;
   description: string | null;
   descriptionAr: string | null;
   filePath: string;
@@ -19,7 +19,7 @@ export interface ContentWithRelations {
   uploadedById: string;
   createdAt: Date;
   updatedAt: Date;
-  subject: { name: string };
+  subject: { name: string; nameAr: string | null };
   uploadedBy: { firstName: string; lastName: string };
 }
 
@@ -30,7 +30,7 @@ export function mapToContentResponse(
 
   dto.id = content.id;
   dto.title = content.title;
-  dto.titleAr = content.titleAr;
+  dto.titleAr = content.titleAr ?? '';
   dto.description = content.description ?? '';
   dto.descriptionAr = content.descriptionAr ?? '';
   dto.filePath = content.filePath;
@@ -42,6 +42,7 @@ export function mapToContentResponse(
   dto.approvedById = content.approvedById;
   dto.subjectId = content.subjectId;
   dto.subjectName = content.subject.name;
+  dto.subjectNameAr = content.subject.nameAr ?? '';
   dto.uploadedById = content.uploadedById;
   dto.uploadedByName = `${content.uploadedBy.firstName} ${content.uploadedBy.lastName}`;
   dto.createdAt = content.createdAt;

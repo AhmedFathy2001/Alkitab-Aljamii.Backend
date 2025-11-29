@@ -61,7 +61,7 @@ export async function queryFacultyMembers(
   const totalPages = Math.ceil(total / limit);
 
   return {
-    items: roles.map((r: { user: { id: any; email: any; firstName: any; lastName: any; isActive: any; }; createdAt: any; }) => ({
+    items: roles.map((r) => ({
       id: r.user.id,
       email: r.user.email,
       firstName: r.user.firstName,

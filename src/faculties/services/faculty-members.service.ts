@@ -20,7 +20,6 @@ import {
   mapToFacultyMemberDto,
 } from '../utils/member-queries.js';
 import type { Prisma } from '@prisma/client/extension';
-import type {  User } from '@prisma/client';
 
 export interface CreateMemberDto {
   email: string;
@@ -216,10 +215,7 @@ export class FacultyMembersService {
       orderBy: { createdAt: 'asc' },
     });
 
-    return roles.map(
-      (r: { user: User; createdAt: Date }) =>
-        mapToFacultyMemberDto(r.user, r.createdAt),
-    );
+    return roles.map((r) => mapToFacultyMemberDto(r.user, r.createdAt));
   }
 
   async addFacultyAdmin(

@@ -9,7 +9,7 @@ export class FacultyRoleDto {
   name!: string;
 
   @ApiProperty({ description: 'Faculty name in Arabic (optional)', example: 'الهندسة', required: false })
-  nameAr?: string; 
+  nameAr?: string | undefined; 
 
   @ApiProperty({ enum: FacultyRole })
   role!: FacultyRole;

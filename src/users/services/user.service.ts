@@ -106,7 +106,7 @@ export class UserService {
           facultyRoles: {
             include: {
               faculty: {
-                select: { id: true, nameEn: true, nameAr: true, code: true },
+                select: { id: true, name: true, nameAr: true, code: true },
               },
             },
           },
@@ -136,7 +136,7 @@ export class UserService {
         facultyRoles: {
           include: {
             faculty: {
-              select: { id: true, nameEn: true, nameAr: true, code: true },
+              select: { id: true, name: true, nameAr: true, code: true },
             },
           },
         },
@@ -172,7 +172,7 @@ export class UserService {
         facultyRoles: {
           include: {
             faculty: {
-              select: { id: true, nameEn: true, nameAr: true, code: true },
+              select: { id: true, name: true, nameAr: true, code: true },
             },
           },
         },
@@ -217,7 +217,7 @@ export class UserService {
         facultyRoles: {
           include: {
             faculty: {
-              select: { id: true, nameEn: true, nameAr: true, code: true },
+              select: { id: true, name: true, nameAr: true, code: true },
             },
           },
         },

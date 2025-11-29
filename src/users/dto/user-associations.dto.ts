@@ -34,7 +34,7 @@ export interface AvailableView {
   role: ViewRole;
   facultyId?: string;
   facultyName?: string;
-  facultyNameAr?: string;
+  facultyNameAr?: string | undefined;
 }
 
 export interface AvailableViewsDto {

@@ -3,7 +3,7 @@ import type { UserResponseDto } from '../dto/user-response.dto.js';
 
 export type UserWithFacultyRoles = User & {
   facultyRoles?: (UserFacultyRole & {
-    faculty: { name: string; nameAr: string };
+    faculty: { name: string; nameAr: string | null };
   })[];
 };
 
@@ -19,7 +19,7 @@ export function toUserResponseDto(user: UserWithFacultyRoles): UserResponseDto {
       ? user.facultyRoles.map((fr) => ({
           facultyId: fr.facultyId,
           facultyName: fr.faculty.name,
-          facultyNameAr: fr.faculty.nameAr,
+          facultyNameAr: fr.faculty.nameAr ?? '',
           role: fr.role,
         }))
       : undefined,

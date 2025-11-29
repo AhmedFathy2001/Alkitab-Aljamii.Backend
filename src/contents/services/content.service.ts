@@ -83,12 +83,7 @@ export class ContentService {
       },
     });
 
-    const mappedContent = {
-      ...content,
-      subject: { name: `${content.subject.name} / ${content.subject.nameAr}` },
-    };
-
-    return mapToContentResponse(mappedContent);
+    return mapToContentResponse(content);
   }
 
   async getAllContents(
@@ -135,12 +130,7 @@ export class ContentService {
       },
     });
 
-    const mappedContents = contents.map((c: { subject: { name: string; nameAr: string } }) => ({
-      ...c,
-      subject: { name: `${c.subject.name} / ${c.subject.nameAr}` },
-    }));
-
-    return { data: mappedContents.map(mapToContentResponse), total: contents.length };
+    return { data: contents.map(mapToContentResponse), total: contents.length };
   }
 
   async getContentById(id: string): Promise<ContentResponseDto> {
@@ -154,12 +144,7 @@ export class ContentService {
 
     if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
 
-    const mappedContent = {
-      ...content,
-      subject: { name: `${content.subject.name} / ${content.subject.nameAr}` },
-    };
-
-    return mapToContentResponse(mappedContent);
+    return mapToContentResponse(content);
   }
 
   async approveContent(id: string, approvedById: string): Promise<ContentResponseDto> {
@@ -172,16 +157,11 @@ export class ContentService {
       },
     });
 
-    const mappedContent = {
-      ...content,
-      subject: { name: `${content.subject.name} / ${content.subject.nameAr}` },
-    };
-
     await this.prisma.contentApproval.create({
       data: { contentId: id, reviewedBy: approvedById, action: 'approved' },
     });
 
-    return mapToContentResponse(mappedContent);
+    return mapToContentResponse(content);
   }
 
   async rejectContent(
@@ -198,11 +178,6 @@ export class ContentService {
       },
     });
 
-    const mappedContent = {
-      ...content,
-      subject: { name: `${content.subject.name} / ${content.subject.nameAr}` },
-    };
-
     await this.prisma.contentApproval.create({
       data: {
         contentId: id,
@@ -212,7 +187,7 @@ export class ContentService {
       },
     });
 
-    return mapToContentResponse(mappedContent);
+    return mapToContentResponse(content);
   }
 
   async deleteContent(id: string): Promise<void> {
