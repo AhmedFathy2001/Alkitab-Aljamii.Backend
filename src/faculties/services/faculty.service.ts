@@ -66,14 +66,43 @@ export class FacultyService {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          _count: {
+            select: {
+              facultyRoles: true,
+            },
+          },
+          facultyRoles: {
+            select: {
+              role: true,
+            },
+            where: {
+              user: { deletedAt: null },
+            },
+          },
+        },
       }),
       this.prisma.faculty.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
 
+    // Map faculties with counts
+    const items = faculties.map((f) => {
+      const professorsCount = f.facultyRoles.filter((r) => r.role === 'professor').length;
+      const studentsCount = f.facultyRoles.filter((r) => r.role === 'student').length;
+      const adminsCount = f.facultyRoles.filter((r) => r.role === 'faculty_admin').length;
+
+      return toFacultyResponseDto({
+        ...f,
+        professorsCount,
+        studentsCount,
+        adminsCount,
+      });
+    });
+
     return {
-      items: faculties.map((f: Faculty) => toFacultyResponseDto(f)),
+      items,
       meta: {
         total,
         page,
@@ -99,7 +128,26 @@ export class FacultyService {
     }
 
     await this.accessService.validateReadAccess(currentUser, faculty);
-    return toFacultyResponseDto(faculty);
+
+    // Get member counts
+    const [professorsCount, studentsCount, adminsCount] = await Promise.all([
+      this.prisma.userFacultyRole.count({
+        where: { facultyId: id, role: 'professor', user: { deletedAt: null } },
+      }),
+      this.prisma.userFacultyRole.count({
+        where: { facultyId: id, role: 'student', user: { deletedAt: null } },
+      }),
+      this.prisma.userFacultyRole.count({
+        where: { facultyId: id, role: 'faculty_admin', user: { deletedAt: null } },
+      }),
+    ]);
+
+    return toFacultyResponseDto({
+      ...faculty,
+      professorsCount,
+      studentsCount,
+      adminsCount,
+    });
   }
 
   async update(

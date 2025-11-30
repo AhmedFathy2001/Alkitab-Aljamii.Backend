@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -6,8 +6,6 @@ import {
   MinLength,
   MaxLength,
   Matches,
-  IsBoolean,
-  IsOptional,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -53,13 +51,4 @@ export class CreateUserDto {
   @IsNotEmpty()
   @MaxLength(100)
   lastName!: string;
-
-  @ApiPropertyOptional({
-    example: false,
-    description:
-      'Whether user is a super admin (only super admins can set this)',
-  })
-  @IsBoolean()
-  @IsOptional()
-  isSuperAdmin?: boolean;
 }

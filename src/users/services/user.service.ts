@@ -48,10 +48,6 @@ export class UserService {
     const normalizedEmail = dto.email.toLowerCase().trim();
     await this.ensureEmailUnique(normalizedEmail);
 
-    if (dto.isSuperAdmin && !currentUser.isSuperAdmin) {
-      throw new ConflictException('Only super admins can create super admins');
-    }
-
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = await this.prisma.user.create({
       data: {
@@ -59,7 +55,7 @@ export class UserService {
         passwordHash,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        isSuperAdmin: dto.isSuperAdmin ?? false,
+        isSuperAdmin: false,
       },
     });
 

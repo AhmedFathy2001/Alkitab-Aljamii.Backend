@@ -4,7 +4,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { I18nMiddleware } from './i18n/i18n.middleware';
 
-
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   app.use(new I18nMiddleware().use);
@@ -24,7 +23,11 @@ async function bootstrap(): Promise<void> {
 
   // Enable CORS for frontend
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      /^http:\/\/192\.168\.\d+\.\d+:\d+$/, // Allow local network
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
@@ -51,7 +54,7 @@ async function bootstrap(): Promise<void> {
   });
 
   const port = process.env['PORT'] ?? 8000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   console.log(`Application is running on: http://localhost:${port.toString()}`);
   console.log(

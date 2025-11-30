@@ -8,7 +8,7 @@ export class FacultyResponseDto {
   name!: string;
 
   @ApiProperty({ example: 'كلية الهندسة' })
-  nameAr!: string;
+  nameAr!: string | null;
 
   @ApiProperty({ example: 'ENG' })
   code!: string;
@@ -27,6 +27,15 @@ export class FacultyResponseDto {
 
   @ApiProperty({ example: '2025-01-15T10:30:00.000Z' })
   updatedAt!: Date;
+
+  @ApiPropertyOptional({ example: 5 })
+  professorsCount?: number;
+
+  @ApiPropertyOptional({ example: 100 })
+  studentsCount?: number;
+
+  @ApiPropertyOptional({ example: 2 })
+  adminsCount?: number;
 }
 
 export class PaginatedFacultyResponseDto {
