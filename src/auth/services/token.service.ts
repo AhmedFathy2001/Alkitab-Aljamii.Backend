@@ -170,7 +170,9 @@ export class TokenService {
     const match = expiresIn.match(/^(\d+)([smhd])$/);
     if (!match) {
       throw new Error(
-        this.i18n.translate('token.INVALID_EXPIRY_FORMAT', { args: { expiresIn } }),
+        this.i18n.translate('token.INVALID_EXPIRY_FORMAT', {
+          args: { expiresIn },
+        }),
       );
     }
 

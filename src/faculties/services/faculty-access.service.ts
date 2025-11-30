@@ -26,7 +26,9 @@ export class FacultyAccessService {
       select: { facultyId: true },
     });
 
-    const facultyIds = userFacultyRoles.map((r: { facultyId: string }) => r.facultyId);
+    const facultyIds = userFacultyRoles.map(
+      (r: { facultyId: string }) => r.facultyId,
+    );
 
     if (facultyIds.length === 0) {
       // لن يتمكن من الوصول لأي كلية

@@ -73,7 +73,9 @@ export class SubjectAssignmentService {
     });
     if (!subject) throw new NotFoundException('Subject not found');
 
-    const targetUser = await this.prisma.user.findUnique({ where: { id: userId } });
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
     if (!targetUser) throw new NotFoundException('User not found');
 
     if (roleInSubject === 'professor') {
@@ -96,21 +98,28 @@ export class SubjectAssignmentService {
         where: { userId, facultyId: subject.facultyId, role: 'student' },
       });
       if (!hasStudentRole) {
-        throw new BadRequestException('User must have student role in this faculty');
+        throw new BadRequestException(
+          'User must have student role in this faculty',
+        );
       }
     }
 
     const existing = await this.prisma.userSubjectAssignment.findUnique({
       where: { userId_subjectId: { userId, subjectId } },
     });
-    if (existing) throw new ConflictException('User already assigned to this subject');
+    if (existing)
+      throw new ConflictException('User already assigned to this subject');
 
     await this.prisma.userSubjectAssignment.create({
       data: { userId, subjectId, roleInSubject },
     });
   }
 
-  async removeUser(subjectId: string, userId: string, user: JwtPayload): Promise<void> {
+  async removeUser(
+    subjectId: string,
+    userId: string,
+    user: JwtPayload,
+  ): Promise<void> {
     await this.validateWriteAccess(user, subjectId);
 
     const assignment = await this.prisma.userSubjectAssignment.findUnique({
@@ -123,8 +132,13 @@ export class SubjectAssignmentService {
     });
   }
 
-  private async validateSubjectAccess(user: JwtPayload, subjectId: string): Promise<void> {
-    const subject = await this.prisma.subject.findUnique({ where: { id: subjectId } });
+  private async validateSubjectAccess(
+    user: JwtPayload,
+    subjectId: string,
+  ): Promise<void> {
+    const subject = await this.prisma.subject.findUnique({
+      where: { id: subjectId },
+    });
     if (!subject) throw new NotFoundException('Subject not found');
 
     if (user.isSuperAdmin) return;
@@ -133,7 +147,11 @@ export class SubjectAssignmentService {
 
     if (activeView === 'faculty_admin') {
       const adminRole = await this.prisma.userFacultyRole.findFirst({
-        where: { userId: user.sub, facultyId: subject.facultyId, role: 'faculty_admin' },
+        where: {
+          userId: user.sub,
+          facultyId: subject.facultyId,
+          role: 'faculty_admin',
+        },
       });
       if (adminRole) return;
     }
@@ -148,8 +166,13 @@ export class SubjectAssignmentService {
     throw new ForbiddenException('No access to this subject');
   }
 
-  private async validateWriteAccess(user: JwtPayload, subjectId: string): Promise<void> {
-    const subject = await this.prisma.subject.findUnique({ where: { id: subjectId } });
+  private async validateWriteAccess(
+    user: JwtPayload,
+    subjectId: string,
+  ): Promise<void> {
+    const subject = await this.prisma.subject.findUnique({
+      where: { id: subjectId },
+    });
     if (!subject) throw new NotFoundException('Subject not found');
 
     if (user.isSuperAdmin) return;
@@ -158,7 +181,11 @@ export class SubjectAssignmentService {
 
     if (activeView === 'faculty_admin') {
       const adminRole = await this.prisma.userFacultyRole.findFirst({
-        where: { userId: user.sub, facultyId: subject.facultyId, role: 'faculty_admin' },
+        where: {
+          userId: user.sub,
+          facultyId: subject.facultyId,
+          role: 'faculty_admin',
+        },
       });
       if (adminRole) return;
     }

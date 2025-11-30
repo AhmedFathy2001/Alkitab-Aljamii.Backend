@@ -5,11 +5,18 @@ export class FacultyRoleDto {
   @ApiProperty()
   facultyId!: string;
 
-  @ApiProperty({ description: 'Faculty name in English (default)', example: 'Engineering' })
+  @ApiProperty({
+    description: 'Faculty name in English (default)',
+    example: 'Engineering',
+  })
   name!: string;
 
-  @ApiProperty({ description: 'Faculty name in Arabic (optional)', example: 'الهندسة', required: false })
-  nameAr?: string | undefined; 
+  @ApiProperty({
+    description: 'Faculty name in Arabic (optional)',
+    example: 'الهندسة',
+    required: false,
+  })
+  nameAr?: string | undefined;
 
   @ApiProperty({ enum: FacultyRole })
   role!: FacultyRole;

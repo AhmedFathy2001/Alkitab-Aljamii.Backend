@@ -1,4 +1,3 @@
-
 import type { FacultyResponseDto } from '../dto/faculty-response.dto.js';
 
 interface FacultyWithCounts {
@@ -18,7 +17,9 @@ interface FacultyWithCounts {
   [key: string]: any;
 }
 
-export function toFacultyResponseDto(faculty: FacultyWithCounts): FacultyResponseDto {
+export function toFacultyResponseDto(
+  faculty: FacultyWithCounts,
+): FacultyResponseDto {
   return {
     id: faculty.id,
     name: faculty.name,
@@ -29,8 +30,14 @@ export function toFacultyResponseDto(faculty: FacultyWithCounts): FacultyRespons
     isActive: faculty.isActive,
     createdAt: faculty.createdAt,
     updatedAt: faculty.updatedAt,
-    ...(faculty.professorsCount !== undefined && { professorsCount: faculty.professorsCount }),
-    ...(faculty.studentsCount !== undefined && { studentsCount: faculty.studentsCount }),
-    ...(faculty.adminsCount !== undefined && { adminsCount: faculty.adminsCount }),
+    ...(faculty.professorsCount !== undefined && {
+      professorsCount: faculty.professorsCount,
+    }),
+    ...(faculty.studentsCount !== undefined && {
+      studentsCount: faculty.studentsCount,
+    }),
+    ...(faculty.adminsCount !== undefined && {
+      adminsCount: faculty.adminsCount,
+    }),
   };
 }

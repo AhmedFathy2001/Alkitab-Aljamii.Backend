@@ -39,9 +39,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const lang = request.lang || 'en'; 
+    const lang = request.lang || 'en';
 
-    const { status, message, error, details } = this.extractErrorInfo(exception, lang);
+    const { status, message, error, details } = this.extractErrorInfo(
+      exception,
+      lang,
+    );
 
     const errorResponse: ErrorResponse = {
       statusCode: status,
@@ -80,10 +83,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
 
       const responseObj = exceptionResponse as Record<string, unknown>;
-      let message = (responseObj['message'] as string) ?? messages[lang].INTERNAL_SERVER_ERROR;
-      let error = (responseObj['error'] as string) ?? HttpStatus[status]?.toString() ?? 'Error';
+      let message =
+        (responseObj['message'] as string) ??
+        messages[lang].INTERNAL_SERVER_ERROR;
+      let error =
+        (responseObj['error'] as string) ??
+        HttpStatus[status]?.toString() ??
+        'Error';
       if (status === HttpStatus.FORBIDDEN) message = messages[lang].FORBIDDEN;
-      if (status === HttpStatus.UNAUTHORIZED) message = messages[lang].UNAUTHORIZED;
+      if (status === HttpStatus.UNAUTHORIZED)
+        message = messages[lang].UNAUTHORIZED;
 
       return {
         status,

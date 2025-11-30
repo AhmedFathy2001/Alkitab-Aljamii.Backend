@@ -7,6 +7,7 @@ import { ContentStreamController } from './controllers/content-stream.controller
 import { ContentService } from './services/content.service.js';
 import { PdfWatermarkService } from './services/pdf-watermark.service.js';
 import { PdfPagesService } from './services/pdf-pages.service.js';
+import { PdfValidationService } from './services/pdf-validation.service.js';
 import { ContentAccessService } from './services/content-access.service.js';
 import { PermissionService } from '../common/services/permission.service.js';
 
@@ -21,6 +22,7 @@ import { PermissionService } from '../common/services/permission.service.js';
     ContentService,
     PdfWatermarkService,
     PdfPagesService,
+    PdfValidationService,
     ContentAccessService,
     PermissionService,
   ],

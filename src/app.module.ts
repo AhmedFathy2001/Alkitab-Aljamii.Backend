@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller.js';
@@ -62,6 +61,6 @@ import { LocalizationInterceptor } from './common/interceptors/localization.inte
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
-  ],  
+  ],
 })
 export class AppModule {}

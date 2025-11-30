@@ -3,11 +3,18 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { STORAGE_SERVICE } from '../../storage/storage.interface.js';
 import type { IStorageService } from '../../storage/storage.interface.js';
 import { PdfPagesService } from './pdf-pages.service.js';
+import { PdfValidationService } from './pdf-validation.service.js';
 import { CreateContentDto } from '../dto/create-content.dto.js';
-import { ContentResponseDto, PaginatedContentResponseDto } from '../dto/content-response.dto.js';
+import {
+  ContentResponseDto,
+  PaginatedContentResponseDto,
+} from '../dto/content-response.dto.js';
 import { ContentType } from '@prisma/client/index-browser';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
-import { mapToContentResponse, ContentWithRelations } from '../utils/content-mapper.js';
+import {
+  mapToContentResponse,
+  ContentWithRelations,
+} from '../utils/content-mapper.js';
 import { I18nService } from 'nestjs-i18n';
 
 type UploadedFileType = {
@@ -34,6 +41,7 @@ export class ContentService {
     private readonly prisma: PrismaService,
     @Inject(STORAGE_SERVICE) storageService: IStorageService,
     private readonly pdfPagesService: PdfPagesService,
+    private readonly pdfValidationService: PdfValidationService,
     private readonly i18n: I18nService,
   ) {
     this.storage = storageService;
@@ -44,22 +52,18 @@ export class ContentService {
     dto: CreateContentDto,
     uploadedById: string,
   ): Promise<ContentResponseDto> {
+    // Validate PDF before uploading (throws BadRequestException if invalid)
+    const pageCount = await this.pdfValidationService.assertValidPdf(
+      file.buffer,
+      file.mimetype,
+    );
+
     const uploadResult = await this.storage.uploadFile(
       file.buffer,
       file.originalname,
       file.mimetype,
       `contents/${dto.subjectId}`,
     );
-
-    let pageCount: number | null = null;
-    if (file.mimetype === 'application/pdf') {
-      try {
-        pageCount = await this.pdfPagesService.getPageCount(file.buffer);
-        this.logger.log(await this.i18n.translate('content.LOG_CALCULATED_PAGE_COUNT', { args: { pageCount } }));
-      } catch (err) {
-        this.logger.warn(await this.i18n.translate('content.LOG_FAILED_PAGE_COUNT', { args: { error: String(err) } }));
-      }
-    }
 
     const content = await this.prisma.content.create({
       data: {
@@ -72,7 +76,7 @@ export class ContentService {
         mimeType: file.mimetype,
         contentType: dto.contentType as ContentType,
         fileSize: BigInt(file.size),
-        pageCount,
+        pageCount: pageCount > 0 ? pageCount : null,
         status: 'pending',
         uploadedById,
         subjectId: dto.subjectId,
@@ -111,7 +115,9 @@ export class ContentService {
         where: { userId },
         select: { subjectId: true },
       });
-      const enrolledSubjectIds = assignments.map((a: { subjectId: string }) => a.subjectId);
+      const enrolledSubjectIds = assignments.map(
+        (a: { subjectId: string }) => a.subjectId,
+      );
 
       if (subjectId) {
         if (!enrolledSubjectIds.includes(subjectId))
@@ -142,12 +148,18 @@ export class ContentService {
       },
     });
 
-    if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
+    if (!content)
+      throw new NotFoundException(
+        await this.i18n.translate('content.CONTENT_NOT_FOUND'),
+      );
 
     return mapToContentResponse(content);
   }
 
-  async approveContent(id: string, approvedById: string): Promise<ContentResponseDto> {
+  async approveContent(
+    id: string,
+    approvedById: string,
+  ): Promise<ContentResponseDto> {
     const content = await this.prisma.content.update({
       where: { id },
       data: { status: 'approved', approvedById, approvedAt: new Date() },
@@ -192,7 +204,10 @@ export class ContentService {
 
   async deleteContent(id: string): Promise<void> {
     const content = await this.prisma.content.findUnique({ where: { id } });
-    if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
+    if (!content)
+      throw new NotFoundException(
+        await this.i18n.translate('content.CONTENT_NOT_FOUND'),
+      );
     await this.storage.deleteFile(content.filePath);
     await this.prisma.content.delete({ where: { id } });
   }
@@ -202,7 +217,10 @@ export class ContentService {
       where: { id },
       select: { filePath: true, fileName: true, mimeType: true },
     });
-    if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
+    if (!content)
+      throw new NotFoundException(
+        await this.i18n.translate('content.CONTENT_NOT_FOUND'),
+      );
     return content as ContentFileInfo;
   }
 
@@ -212,7 +230,9 @@ export class ContentService {
     mimeType: string;
   }> {
     const content = await this.getContentFileInfo(id);
-    const stream: NodeJS.ReadableStream = await this.storage.getFileStream(content.filePath);
+    const stream: NodeJS.ReadableStream = await this.storage.getFileStream(
+      content.filePath,
+    );
     return { stream, fileName: content.fileName, mimeType: content.mimeType };
   }
 
@@ -232,9 +252,14 @@ export class ContentService {
       select: { id: true, pageCount: true, mimeType: true, filePath: true },
     });
 
-    if (!content) throw new NotFoundException(await this.i18n.translate('content.CONTENT_NOT_FOUND'));
+    if (!content)
+      throw new NotFoundException(
+        await this.i18n.translate('content.CONTENT_NOT_FOUND'),
+      );
     if (content.mimeType !== 'application/pdf') {
-      throw new NotFoundException(await this.i18n.translate('content.PAGE_COUNT_ONLY_PDF'));
+      throw new NotFoundException(
+        await this.i18n.translate('content.PAGE_COUNT_ONLY_PDF'),
+      );
     }
 
     if (content.pageCount !== null) {
@@ -244,17 +269,29 @@ export class ContentService {
       };
     }
 
-    this.logger.log(await this.i18n.translate('content.LOG_CALCULATING_PAGE_COUNT', { args: { id } }));
+    this.logger.log(
+      await this.i18n.translate('content.LOG_CALCULATING_PAGE_COUNT', {
+        args: { id },
+      }),
+    );
     const buffer: Buffer = await this.storage.getFileBuffer(content.filePath);
     const pageCount = await this.pdfPagesService.getPageCount(buffer);
 
     this.prisma.content
       .update({ where: { id }, data: { pageCount } })
       .then(async () =>
-        this.logger.log(await this.i18n.translate('content.LOG_STORED_PAGE_COUNT', { args: { pageCount, id } })),
+        this.logger.log(
+          await this.i18n.translate('content.LOG_STORED_PAGE_COUNT', {
+            args: { pageCount, id },
+          }),
+        ),
       )
       .catch(async (err: any) =>
-        this.logger.warn(await this.i18n.translate('content.LOG_FAILED_STORE_PAGE_COUNT', { args: { id, error: String(err) } })),
+        this.logger.warn(
+          await this.i18n.translate('content.LOG_FAILED_STORE_PAGE_COUNT', {
+            args: { id, error: String(err) },
+          }),
+        ),
       );
 
     return {
@@ -263,4 +300,3 @@ export class ContentService {
     };
   }
 }
-

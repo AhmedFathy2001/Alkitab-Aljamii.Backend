@@ -3,6 +3,7 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  StreamableFile,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -14,7 +15,15 @@ export class LocalizationInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<Request>();
     const lang = request.lang || 'en';
 
-    return next.handle().pipe(map((data) => this.localizeResponse(data, lang)));
+    return next.handle().pipe(
+      map((data) => {
+        // Skip localization for file streams
+        if (data instanceof StreamableFile) {
+          return data;
+        }
+        return this.localizeResponse(data, lang);
+      }),
+    );
   }
 
   private localizeResponse(data: any, lang: string): any {

@@ -17,7 +17,10 @@ export class SubjectService {
   constructor(private readonly prisma: PrismaService) {}
 
   // ========================= CREATE =============================
-  async create(dto: CreateSubjectDto, user: JwtPayload): Promise<SubjectResponseDto> {
+  async create(
+    dto: CreateSubjectDto,
+    user: JwtPayload,
+  ): Promise<SubjectResponseDto> {
     await this.validateFacultyAccess(user, dto.facultyId);
     await this.ensureCodeUnique(dto.facultyId, dto.code);
 
@@ -44,7 +47,12 @@ export class SubjectService {
     const { page = 1, limit = 10, facultyId, search, isActive } = query;
     const skip = (page - 1) * limit;
 
-    const where = await this.buildWhereClause(user, facultyId, search, isActive);
+    const where = await this.buildWhereClause(
+      user,
+      facultyId,
+      search,
+      isActive,
+    );
 
     const [subjects, total] = await Promise.all([
       this.prisma.subject.findMany({
@@ -138,13 +146,18 @@ export class SubjectService {
     return subject;
   }
 
-  private async ensureCodeUnique(facultyId: string, code: string): Promise<void> {
+  private async ensureCodeUnique(
+    facultyId: string,
+    code: string,
+  ): Promise<void> {
     const existing = await this.prisma.subject.findUnique({
       where: { facultyId_code: { facultyId, code } },
     });
 
     if (existing) {
-      throw new ConflictException('Subject code already exists in this faculty');
+      throw new ConflictException(
+        'Subject code already exists in this faculty',
+      );
     }
   }
 
@@ -218,7 +231,9 @@ export class SubjectService {
         select: { subjectId: true },
       });
 
-      where['id'] = { in: assignments.map((a: { subjectId: any; }) => a.subjectId) };
+      where['id'] = {
+        in: assignments.map((a: { subjectId: any }) => a.subjectId),
+      };
       return where;
     }
 
@@ -235,8 +250,12 @@ export class SubjectService {
       });
 
       where['OR'] = [
-        { facultyId: { in: adminRoles.map((r: { facultyId: any; }) => r.facultyId) } },
-        { id: { in: assignments.map((a: { subjectId: any; }) => a.subjectId) } },
+        {
+          facultyId: {
+            in: adminRoles.map((r: { facultyId: any }) => r.facultyId),
+          },
+        },
+        { id: { in: assignments.map((a: { subjectId: any }) => a.subjectId) } },
       ];
 
       return where;
@@ -249,7 +268,9 @@ export class SubjectService {
         select: { subjectId: true },
       });
 
-      where['id'] = { in: assignments.map((a: { subjectId: any; }) => a.subjectId) };
+      where['id'] = {
+        in: assignments.map((a: { subjectId: any }) => a.subjectId),
+      };
     }
 
     return where;

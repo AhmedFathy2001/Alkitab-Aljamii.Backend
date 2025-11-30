@@ -20,7 +20,7 @@ export class FacultyService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly accessService: FacultyAccessService,
-    private readonly i18n:  I18nService, // i18n service
+    private readonly i18n: I18nService, // i18n service
   ) {}
 
   async create(
@@ -89,9 +89,15 @@ export class FacultyService {
 
     // Map faculties with counts
     const items = faculties.map((f) => {
-      const professorsCount = f.facultyRoles.filter((r) => r.role === 'professor').length;
-      const studentsCount = f.facultyRoles.filter((r) => r.role === 'student').length;
-      const adminsCount = f.facultyRoles.filter((r) => r.role === 'faculty_admin').length;
+      const professorsCount = f.facultyRoles.filter(
+        (r) => r.role === 'professor',
+      ).length;
+      const studentsCount = f.facultyRoles.filter(
+        (r) => r.role === 'student',
+      ).length;
+      const adminsCount = f.facultyRoles.filter(
+        (r) => r.role === 'faculty_admin',
+      ).length;
 
       return toFacultyResponseDto({
         ...f,
@@ -138,7 +144,11 @@ export class FacultyService {
         where: { facultyId: id, role: 'student', user: { deletedAt: null } },
       }),
       this.prisma.userFacultyRole.count({
-        where: { facultyId: id, role: 'faculty_admin', user: { deletedAt: null } },
+        where: {
+          facultyId: id,
+          role: 'faculty_admin',
+          user: { deletedAt: null },
+        },
       }),
     ]);
 
@@ -177,7 +187,9 @@ export class FacultyService {
         ...(dto.nameAr && { nameAr: dto.nameAr }),
         ...(dto.code && { code: dto.code }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.descriptionAr !== undefined && { descriptionAr: dto.descriptionAr }),
+        ...(dto.descriptionAr !== undefined && {
+          descriptionAr: dto.descriptionAr,
+        }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });
@@ -269,4 +281,3 @@ export class FacultyService {
     }
   }
 }
-

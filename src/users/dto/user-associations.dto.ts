@@ -39,10 +39,13 @@ export interface AvailableView {
 
 export interface AvailableViewsDto {
   primaryRole: ViewRole;
-  primaryFacultyId?: string;
-  primaryFacultyName?: string;
-  primaryFacultyNameAr?: string;
+  primaryFacultyId?: string | undefined;
+  primaryFacultyName?: string | undefined;
+  primaryFacultyNameAr?: string | undefined;
   availableViews: AvailableView[];
+  // Current active context from JWT token
+  currentView?: ViewRole | undefined;
+  currentFacultyId?: string | undefined;
 }
 
 // ======================= EMAIL CHECK =======================

@@ -6,7 +6,8 @@ import { I18nMiddleware } from './i18n/i18n.middleware';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  app.use(new I18nMiddleware().use);
+  const i18nMiddleware = new I18nMiddleware();
+  app.use(i18nMiddleware.use.bind(i18nMiddleware));
 
   // Global validation pipe with strict settings
   app.useGlobalPipes(

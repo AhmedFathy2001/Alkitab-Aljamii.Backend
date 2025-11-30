@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -21,10 +22,12 @@ import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly tokenService: TokenService,
-    private readonly i18n: I18nService, // <-- i18n injected
+    private readonly i18n: I18nService,
   ) {}
 
   async login(dto: LoginDto, deviceInfo?: string): Promise<AuthResponseDto> {
@@ -46,11 +49,25 @@ export class AuthService {
 
     let initialContext: { activeView?: string; facultyId?: string } = {};
     if (!user.isSuperAdmin && facultyRoles.length > 0) {
-      const firstRole = facultyRoles[0]!;
+      // Use priority order: faculty_admin > professor > student
+      const priorityOrder = ['faculty_admin', 'professor', 'student'] as const;
+      const sortedRoles = [...facultyRoles].sort((a, b) => {
+        const aIndex = priorityOrder.indexOf(
+          a.role as (typeof priorityOrder)[number],
+        );
+        const bIndex = priorityOrder.indexOf(
+          b.role as (typeof priorityOrder)[number],
+        );
+        return aIndex - bIndex;
+      });
+      const primaryRole = sortedRoles[0]!;
       initialContext = {
-        activeView: firstRole.role,
-        facultyId: firstRole.facultyId,
+        activeView: primaryRole.role,
+        facultyId: primaryRole.facultyId,
       };
+      this.logger.log(
+        `Login context for ${user.email}: roles=${facultyRoles.map((r) => `${r.role}@${r.faculty.name}`).join(', ')}, selected=${primaryRole.role}@${primaryRole.faculty.name}`,
+      );
     }
 
     const tokens = await this.tokenService.generateTokens(
@@ -168,7 +185,9 @@ export class AuthService {
 
     if (!facultyRole) {
       throw new ForbiddenException(
-        await this.i18n.translate('auth.NO_ACCESS_IN_FACULTY', { args: { role: dto.activeView } }),
+        await this.i18n.translate('auth.NO_ACCESS_IN_FACULTY', {
+          args: { role: dto.activeView },
+        }),
       );
     }
 
@@ -243,4 +262,3 @@ export class AuthService {
     });
   }
 }
-

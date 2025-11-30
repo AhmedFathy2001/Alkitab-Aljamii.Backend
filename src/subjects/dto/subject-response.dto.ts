@@ -1,10 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SubjectResponseDto {
-  @ApiProperty() 
+  @ApiProperty()
   id!: string;
 
-  @ApiProperty({ example: 'Mathematics', description: 'Subject name in English' })
+  @ApiProperty({
+    example: 'Mathematics',
+    description: 'Subject name in English',
+  })
   name!: string;
 
   @ApiProperty({ example: 'الرياضيات', description: 'Subject name in Arabic' })

@@ -70,9 +70,11 @@ export class FacultyMembersService {
       await validateUserCanBeRole(this.prisma, existingUser, role, facultyId);
 
       if (role === 'student') {
-        const existingStudentRole = await this.prisma.userFacultyRole.findFirst({
-          where: { userId: existingUser.id, role: 'student' },
-        });
+        const existingStudentRole = await this.prisma.userFacultyRole.findFirst(
+          {
+            where: { userId: existingUser.id, role: 'student' },
+          },
+        );
         if (existingStudentRole) {
           throw new ConflictException(
             'This student is already assigned to a faculty',

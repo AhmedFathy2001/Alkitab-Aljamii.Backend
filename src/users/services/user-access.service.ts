@@ -30,7 +30,11 @@ export class UserAccessService {
     const activeView = currentUser.activeView;
 
     if (activeView === 'faculty_admin') {
-      return this.buildFacultyAdminFilter(currentUser.sub, facultyId, subjectId);
+      return this.buildFacultyAdminFilter(
+        currentUser.sub,
+        facultyId,
+        subjectId,
+      );
     }
 
     if (activeView === 'professor') {
@@ -83,7 +87,10 @@ export class UserAccessService {
     return buildProfessorDefaultFilter(professorId, allowedSubjectIds);
   }
 
-  async validateReadAccess(currentUser: JwtPayload, targetUser: User): Promise<void> {
+  async validateReadAccess(
+    currentUser: JwtPayload,
+    targetUser: User,
+  ): Promise<void> {
     if (currentUser.sub === targetUser.id) return;
     if (currentUser.isSuperAdmin) return;
 
@@ -99,12 +106,13 @@ export class UserAccessService {
         return;
     }
 
-    throw new ForbiddenException(
-      this.i18n.t('errors.user.noReadAccess'),
-    );
+    throw new ForbiddenException(this.i18n.t('errors.user.noReadAccess'));
   }
 
-  async validateWriteAccess(currentUser: JwtPayload, targetId?: string): Promise<void> {
+  async validateWriteAccess(
+    currentUser: JwtPayload,
+    targetId?: string,
+  ): Promise<void> {
     if (currentUser.isSuperAdmin) {
       if (targetId) {
         const targetUser = await this.prisma.user.findUnique({
@@ -121,27 +129,27 @@ export class UserAccessService {
     }
 
     if (targetId && targetId === currentUser.sub)
-      throw new ForbiddenException(
-        this.i18n.t('errors.user.modifySelf'),
-      );
+      throw new ForbiddenException(this.i18n.t('errors.user.modifySelf'));
 
     const activeView = currentUser.activeView;
 
     if (activeView === 'faculty_admin') {
-      if (targetId && !(await this.canFacultyAdminAccessUser(currentUser.sub, targetId))) {
-        throw new ForbiddenException(
-          this.i18n.t('errors.user.notInFaculty'),
-        );
+      if (
+        targetId &&
+        !(await this.canFacultyAdminAccessUser(currentUser.sub, targetId))
+      ) {
+        throw new ForbiddenException(this.i18n.t('errors.user.notInFaculty'));
       }
       return;
     }
 
-    throw new ForbiddenException(
-      this.i18n.t('errors.user.noWriteAccess'),
-    );
+    throw new ForbiddenException(this.i18n.t('errors.user.noWriteAccess'));
   }
 
-  async canFacultyAdminAccessUser(adminId: string, userId: string): Promise<boolean> {
+  async canFacultyAdminAccessUser(
+    adminId: string,
+    userId: string,
+  ): Promise<boolean> {
     const facultyIds = await this.getAdminFacultyIds(adminId);
     if (facultyIds.length === 0) return false;
 
@@ -155,7 +163,10 @@ export class UserAccessService {
     return !!userInFaculty;
   }
 
-  async canProfessorAccessUser(professorId: string, userId: string): Promise<boolean> {
+  async canProfessorAccessUser(
+    professorId: string,
+    userId: string,
+  ): Promise<boolean> {
     if (professorId === userId) return true;
 
     const subjectIds = await this.getProfessorSubjectIds(professorId);

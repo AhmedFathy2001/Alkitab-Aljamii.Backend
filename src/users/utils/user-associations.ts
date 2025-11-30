@@ -109,6 +109,8 @@ export async function getAvailableViewsData(
     return {
       primaryRole: 'super_admin',
       availableViews: [{ role: 'super_admin' }],
+      currentView: 'super_admin',
+      currentFacultyId: undefined,
     };
   }
 
@@ -145,7 +147,13 @@ export async function getAvailableViewsData(
     primaryFacultyId = firstStudent.facultyId;
   }
 
-  const result: AvailableViewsDto = { primaryRole, availableViews };
+  const result: AvailableViewsDto = {
+    primaryRole,
+    availableViews,
+    // Include current context from JWT token
+    currentView: currentUser.activeView as ViewRole | undefined,
+    currentFacultyId: currentUser.facultyId,
+  };
   if (primaryFacultyId) {
     result.primaryFacultyId = primaryFacultyId;
   }
