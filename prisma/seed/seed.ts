@@ -141,7 +141,7 @@ const professorAssignments = [
   { email: 'Ali294@gmail.com', subjectCodes: ['PH102'] },
 ];
 
-// Assign Students (ثابت)
+// Assign Students 
 const studentAssignments = [
   { email: 'Ahmed790@gmail.com', subjectCodes: ['CS101', 'CS102'] },
   { email: 'Rewan160@gmail.com', subjectCodes: ['CS102', 'CS103'] },
