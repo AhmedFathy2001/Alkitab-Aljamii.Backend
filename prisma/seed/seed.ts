@@ -91,41 +91,68 @@ const subjects = [
 const contentsData = [
 {
     subjectCode: 'CS101',
-    uploadedByEmail: 'amr185@gmail.com',
+    uploadedByEmail: 'mahmud586@gmail.com',
     contents: [
-        { title: 'Data Structures Basics', fileName: 'ds_basics.pdf', filePath: '/files/ds_basics.pdf', contentType: ContentType.textbook },
-        { title: 'DS Exercises', fileName: 'ds_exercises.pdf', filePath: '/files/ds_exercises.pdf', contentType: ContentType.other },
+        { title: 'Data Structures Basics', fileName: 'ds_basics.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/ds_basics.pdf', contentType: ContentType.textbook },
+        { title: 'DS Exercises', fileName: 'ds_exercises.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/ds_exercises.pdf', contentType: ContentType.other },
     ],
 },
 {
     subjectCode: 'CS102',
-    uploadedByEmail: 'mahmud586@gmail.com',
+    uploadedByEmail: 'amr185@gmail.com',
     contents: [
-        { title: 'Algorithms Guide', fileName: 'alg_guide.pdf', filePath: '/files/alg_guide.pdf', contentType: ContentType.guide },
+        { title: 'Algorithms Guide', fileName: 'alg_guide.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/alg_guide.pdf', contentType: ContentType.guide },
     ],
 },
 {
     subjectCode: 'SC101',
     uploadedByEmail: 'yasser858@gmail.com',
     contents: [
-        { title: 'Calculus I', fileName: 'calc1.pdf', filePath: '/files/calc1.pdf', contentType: ContentType.textbook },
+        { title: 'Calculus I', fileName: 'calc1.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/calc1.pdf', contentType: ContentType.textbook },
     ],
 },
 {
     subjectCode: 'ME102',
     uploadedByEmail: 'Khaled599@gmail.com',
     contents: [
-        { title: 'Anatomy Notes', fileName: 'ant_notes.pdf', filePath: '/files/ant_notes.pdf', contentType: ContentType.notes },
+        { title: 'Anatomy Notes', fileName: 'ant_notes.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/ant_notes.pdf', contentType: ContentType.notes },
     ],
 },
 {
     subjectCode: 'PH101',
     uploadedByEmail: 'Sara683@gmail.com',
     contents: [
-        { title: 'biology Works', fileName: 'biology.pdf', filePath: '/files/biology.pdf', contentType: ContentType.textbook },
-        { title: 'Medical Microbiology', fileName: 'Microbiology.pdf', filePath: '/files/Microbiology.pdf', contentType: ContentType.reference },
+        { title: 'biology Works', fileName: 'biology.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/biology.pdf', contentType: ContentType.textbook },
+        { title: 'Medical Microbiology', fileName: 'Microbiology.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/Microbiology.pdf', contentType: ContentType.reference },
     ],
 },
+];
+// ======== Subject Assignments ========
+
+// Assign Professors 
+const professorAssignments = [
+  { email: 'amr185@gmail.com', subjectCodes: ['CS101', 'CS102'] },
+  { email: 'mahmud586@gmail.com', subjectCodes: ['CS103','CS102'] },
+  { email: 'yasser858@gmail.com', subjectCodes: ['SC101'] },
+  { email: 'randa595@gmail.com', subjectCodes: ['SC102'] },
+  { email: 'hoda154@gmail.com', subjectCodes: ['ME101'] },
+  { email: 'Khaled599@gmail.com', subjectCodes: ['ME102','ME101'] },
+  { email: 'Sara683@gmail.com', subjectCodes: ['PH101'] },
+  { email: 'Ali294@gmail.com', subjectCodes: ['PH102'] },
+];
+
+// Assign Students (ثابت)
+const studentAssignments = [
+  { email: 'Ahmed790@gmail.com', subjectCodes: ['CS101', 'CS102'] },
+  { email: 'Rewan160@gmail.com', subjectCodes: ['CS102', 'CS103'] },
+  { email: 'Mariam795@gmail.com', subjectCodes: ['CS101', 'CS103'] },
+  { email: 'Mahamed593@gmail.com', subjectCodes: ['CS101', 'CS102', 'CS103'] },
+  { email: 'akram152@gmail.com', subjectCodes: ['SC101', 'SC102'] },
+  { email: 'ranen@gmail.com', subjectCodes: ['SC101'] },
+  { email: 'Ahmed695@gmail.com.com', subjectCodes: ['ME101', 'ME102'] },
+  { email: 'Ayman273@gmail.com.com', subjectCodes: ['ME102'] },
+  { email: 'Maha485@gmail.com.com', subjectCodes: ['PH101'] },
+  { email: 'mohab393@gmail.com.com', subjectCodes: ['PH101', 'PH102'] },
 ];
 
 // ======== Seed Functions ========
@@ -238,6 +265,52 @@ async function seedContents() {
     }
   }
 }
+// ======== Seed Function for Static Assignments ========
+
+async function seedStaticAssignments() {
+  console.log('🌱 Assigning professors and students to subjects (static)...');
+
+  for (const prof of professorAssignments) {
+    const user = await prisma.user.findUnique({ where: { email: prof.email } });
+    if (!user) continue;
+
+    for (const code of prof.subjectCodes) {
+      const subject = await prisma.subject.findFirst({ where: { code } });
+      if (!subject) continue;
+
+      const exists = await prisma.userSubjectAssignment.findFirst({
+        where: { userId: user.id, subjectId: subject.id },
+      });
+      if (!exists) {
+        await prisma.userSubjectAssignment.create({
+          data: { userId: user.id, subjectId: subject.id, roleInSubject: 'professor' },
+        });
+        console.log(`✅ Professor ${user.firstName} assigned to ${subject.name}`);
+      }
+    }
+  }
+
+  for (const stu of studentAssignments) {
+    const user = await prisma.user.findUnique({ where: { email: stu.email } });
+    if (!user) continue;
+
+    for (const code of stu.subjectCodes) {
+      const subject = await prisma.subject.findFirst({ where: { code } });
+      if (!subject) continue;
+
+      const exists = await prisma.userSubjectAssignment.findFirst({
+        where: { userId: user.id, subjectId: subject.id },
+      });
+      if (!exists) {
+        await prisma.userSubjectAssignment.create({
+          data: { userId: user.id, subjectId: subject.id, roleInSubject: 'student' },
+        });
+        console.log(`✅ Student ${user.firstName} assigned to ${subject.name}`);
+      }
+    }
+  }
+}
+
 
 // ======== Run Seed ========
 
@@ -249,6 +322,7 @@ async function seedAll() {
     await seedUsers();
     await seedSubjects();
     await seedContents();
+    await seedStaticAssignments();
     console.log('\n🎉 Realistic full database seed completed successfully!');
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);

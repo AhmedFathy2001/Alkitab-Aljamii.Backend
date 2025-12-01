@@ -48,16 +48,16 @@ export class AuthService {
     });
 
     let initialContext: { activeView?: string; facultyId?: string } = {};
-    if (!user.isSuperAdmin && facultyRoles.length > 0) {
+
+    if (user.isSuperAdmin) {
+      // تعيين view خاص للـ Super Admin
+      initialContext.activeView = 'super_admin';
+    } else if (facultyRoles.length > 0) {
       // Use priority order: faculty_admin > professor > student
       const priorityOrder = ['faculty_admin', 'professor', 'student'] as const;
       const sortedRoles = [...facultyRoles].sort((a, b) => {
-        const aIndex = priorityOrder.indexOf(
-          a.role as (typeof priorityOrder)[number],
-        );
-        const bIndex = priorityOrder.indexOf(
-          b.role as (typeof priorityOrder)[number],
-        );
+        const aIndex = priorityOrder.indexOf(a.role as (typeof priorityOrder)[number]);
+        const bIndex = priorityOrder.indexOf(b.role as (typeof priorityOrder)[number]);
         return aIndex - bIndex;
       });
       const primaryRole = sortedRoles[0]!;
@@ -66,7 +66,9 @@ export class AuthService {
         facultyId: primaryRole.facultyId,
       };
       this.logger.log(
-        `Login context for ${user.email}: roles=${facultyRoles.map((r) => `${r.role}@${r.faculty.name}`).join(', ')}, selected=${primaryRole.role}@${primaryRole.faculty.name}`,
+        `Login context for ${user.email}: roles=${facultyRoles
+          .map((r) => `${r.role}@${r.faculty.name}`)
+          .join(', ')}, selected=${primaryRole.role}@${primaryRole.faculty.name}`,
       );
     }
 
