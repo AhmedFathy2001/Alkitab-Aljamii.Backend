@@ -6,15 +6,18 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
-import type { PaginatedResult } from '../../common/pagination/pagination.dto.js';
+import type { PaginatedResult, PaginationQueryDto } from '../../common/pagination/pagination.dto.js';
 import type { CreateSubjectDto } from '../dto/create-subject.dto.js';
 import type { UpdateSubjectDto } from '../dto/update-subject.dto.js';
 import type { QuerySubjectDto } from '../dto/query-subject.dto.js';
 import type { SubjectResponseDto } from '../dto/subject-response.dto.js';
+import { PaginationService } from '../../common/services/pagination.service.js';
 
 @Injectable()
 export class SubjectService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService,
+    private paginationService: PaginationService,
+  ) {}
 
   // ========================= CREATE =============================
   async create(
@@ -274,6 +277,16 @@ export class SubjectService {
     }
 
     return where;
+  }
+  async getSubjects(query: PaginationQueryDto, facultyCode?: string) {
+    const extraWhere = facultyCode ? { facultyCode } : {};
+    return this.paginationService.paginate(
+      (args) => this.prisma.subject.findMany(args),
+      (args) => this.prisma.subject.count(args),
+      query,
+      extraWhere,
+      ['name'] // searchable fields
+    );
   }
 
   // ========================= RESPONSE MAPPER =============================

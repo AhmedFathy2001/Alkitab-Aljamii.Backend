@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { Prisma, Faculty } from '@prisma/client/index-browser';
-import type { PaginatedResult } from '../../common/pagination/pagination.dto.js';
+import type { PaginatedResult, PaginationQueryDto } from '../../common/pagination/pagination.dto.js';
 import type { CreateFacultyDto } from '../dto/create-faculty.dto.js';
 import type { UpdateFacultyDto } from '../dto/update-faculty.dto.js';
 import type { QueryFacultyDto } from '../dto/query-faculty.dto.js';
@@ -14,6 +14,7 @@ import type { JwtPayload } from '../../common/decorators/current-user.decorator.
 import { FacultyAccessService } from './faculty-access.service.js';
 import { toFacultyResponseDto } from '../utils/faculty-mapper.js';
 import { I18nService } from 'nestjs-i18n';
+import { PaginationService } from '../../common/services/pagination.service.js';
 
 @Injectable()
 export class FacultyService {
@@ -21,6 +22,7 @@ export class FacultyService {
     private readonly prisma: PrismaService,
     private readonly accessService: FacultyAccessService,
     private readonly i18n: I18nService, // i18n service
+    private paginationService: PaginationService,
   ) {}
 
   async create(
@@ -279,5 +281,19 @@ export class FacultyService {
       const message = await this.i18n.translate('faculty.CODE_EXISTS');
       throw new ConflictException(message);
     }
+  }
+  async getFaculties(query: PaginationQueryDto, filters?: { type?: string; status?: string }) {
+    // بناء extraWhere بناءً على الفلاتر المتاحة
+    const extraWhere: any = {};
+    if (filters?.type) extraWhere.type = filters.type;
+    if (filters?.status) extraWhere.status = filters.status;
+  
+    return this.paginationService.paginate(
+      (args) => this.prisma.faculty.findMany(args),
+      (args) => this.prisma.faculty.count(args),
+      query,
+      extraWhere,            
+      ['name', 'code'],      // searchable fields
+    );
   }
 }

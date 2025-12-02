@@ -35,6 +35,8 @@ import {
   PaginatedContentResponseDto,
 } from '../dto/content-response.dto.js';
 import { CreateContentDto } from '../dto/create-content.dto.js';
+import { PaginationQueryDto } from '@/common/index.js';
+
 
 type UploadedFileType = {
   fieldname: string;
@@ -155,4 +157,73 @@ export class ContentController {
   async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     await this.contentService.deleteContent(id);
   }
+  @Get('admin-all')
+@Roles('super_admin')
+async getAllContentForSuperAdmin(
+  @Query('page') page?: number,
+  @Query('limit') limit?: number,
+  @Query('sortBy') sortBy?: string,
+  @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  @Query('subjectId') subjectId?: string,
+  @Query('uploaderId') uploaderId?: string,
+  @Query('search') search?: string,
+) {
+  const query: any = {
+    page: page ? Number(page) : 1,
+    limit: limit ? Number(limit) : 10,
+    sortBy: sortBy ?? 'createdAt',
+    sortOrder: sortOrder ?? 'desc',
+  };
+
+  if (subjectId) query.subjectId = subjectId;
+  if (uploaderId) query.uploaderId = uploaderId;
+  if (search) query.search = search;
+
+  return this.contentService.filterAndPaginateForSuperAdmin(query);
 }
+@Get()
+async getContents(
+  @Query() query: PaginationQueryDto,
+  @Query('subjectId') subjectId?: string,
+  @Query('status') status?: string,
+): Promise<PaginatedContentResponseDto> {
+  const extraWhere: Record<string, any> = {};
+
+  if (subjectId) extraWhere['subjectId'] = subjectId;
+  if (status) extraWhere['status'] = status;
+
+  if (query.search) {
+    extraWhere['OR'] = [
+      { title: { contains: query.search, mode: 'insensitive' } },
+      { description: { contains: query.search, mode: 'insensitive' } },
+    ];
+  }
+
+  const result = await this.contentService.getContentsForUsers(query, extraWhere);
+
+  const mappedItems: ContentResponseDto[] = result.items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    titleAr: item.titleAr ?? null,
+    description: item.description,
+    descriptionAr: item.descriptionAr ?? null,
+    contentType: item.contentType,
+    status: item.status,
+    subjectId: item.subjectId,
+    uploadedById: item.uploadedById,
+    filePath: item.filePath,
+    fileName: item.fileName,
+    mimeType: item.mimeType,
+    fileSize: item.fileSize,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  }));
+
+  return {
+    data: mappedItems,
+    total: result.meta.total,
+  };
+}
+
+}
+

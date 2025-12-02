@@ -23,7 +23,7 @@ import { SubjectAssignmentService } from '../services/subject-assignment.service
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator.js';
-import type { PaginatedResult } from '../../common/pagination/pagination.dto.js';
+import { SortOrder, type PaginatedResult } from '../../common/pagination/pagination.dto.js';
 import { CreateSubjectDto } from '../dto/create-subject.dto.js';
 import { UpdateSubjectDto } from '../dto/update-subject.dto.js';
 import { QuerySubjectDto } from '../dto/query-subject.dto.js';
@@ -136,4 +136,22 @@ export class SubjectController {
   ): Promise<void> {
     return this.assignmentService.removeUser(id, userId, user);
   }
+  @Get('faculty')
+async getSubjects(
+  @Query('page') page?: number,
+  @Query('limit') limit?: number,
+  @Query('sortBy') sortBy?: string,
+  @Query('sortOrder') sortOrder?: SortOrder,
+  @Query('facultyCode') facultyCode?: string,
+) {
+  return this.subjectService.getSubjects(
+    {
+      page: page ?? 1,
+      limit: limit ?? 10,
+      sortBy: sortBy ?? 'createdAt',
+      sortOrder: sortOrder ?? SortOrder.DESC, // استخدم enum بدل string
+    },
+    facultyCode,
+  );
+}
 }

@@ -35,6 +35,7 @@ import {
   UserResponseDto,
   PaginatedUserResponseDto,
 } from '../dto/user-response.dto.js';
+import { SortOrder } from '@/common/index.js';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -260,5 +261,20 @@ export class UserController {
     @CurrentUser() user: JwtPayload,
   ): Promise<UserResponseDto> {
     return this.userService.restore(id, user);
+  }
+  @Get('paginated')
+  async getUsers(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: SortOrder,
+    @Query('role') role?: string
+  ) {
+    return this.userService.getUsers({
+      page: page ?? 1,
+      limit: limit ?? 10,
+      sortBy: sortBy ?? 'createdAt',
+      sortOrder: sortOrder ?? SortOrder.DESC,
+    }, role);
   }
 }

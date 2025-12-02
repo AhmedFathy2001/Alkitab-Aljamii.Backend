@@ -31,6 +31,7 @@ import {
   type JwtPayload,
 } from '../../common/decorators/current-user.decorator.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+import { PaginationQueryDto, PaginatedResult } from '../../common/pagination/pagination.dto.js';
 
 @ApiTags('Faculties')
 @ApiBearerAuth()
@@ -139,5 +140,19 @@ export class FacultyController {
     @CurrentUser() currentUser: JwtPayload,
   ): Promise<FacultyResponseDto> {
     return this.facultyService.restore(id, currentUser);
+  }
+  @Get()
+  @ApiOperation({ summary: 'Get all faculties with pagination and optional filters' })
+  @ApiResponse({ status: 200, description: 'List of faculties', type: [FacultyResponseDto] })
+  async getFaculties(
+    @Query() query: PaginationQueryDto,
+    @Query('type') type?: string,
+    @Query('status') status?: string,
+  ): Promise<PaginatedResult<FacultyResponseDto>> {
+    const filters: { type?: string; status?: string } = {};
+if (type) filters.type = type;
+if (status) filters.status = status;
+
+return this.facultyService.getFaculties(query, filters);
   }
 }

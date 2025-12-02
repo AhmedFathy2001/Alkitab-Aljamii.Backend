@@ -16,6 +16,8 @@ import {
   ContentWithRelations,
 } from '../utils/content-mapper.js';
 import { I18nService } from 'nestjs-i18n';
+import { PaginationService } from '../../common/services/pagination.service.js';
+import { PaginationQueryDto } from '@/common/index.js';
 
 type UploadedFileType = {
   fieldname: string;
@@ -39,6 +41,7 @@ export class ContentService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private paginationService: PaginationService,
     @Inject(STORAGE_SERVICE) storageService: IStorageService,
     private readonly pdfPagesService: PdfPagesService,
     private readonly pdfValidationService: PdfValidationService,
@@ -299,4 +302,82 @@ export class ContentService {
       chunkSize: this.pdfPagesService.defaultChunkSize,
     };
   }
+  async filterAndPaginateForSuperAdmin(query: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    subjectId?: string;
+    uploaderId?: string;
+    search?: string;
+  }) {
+    // Default values to avoid undefined errors
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortOrder = query.sortOrder ?? 'desc';
+  
+    const skip = (page - 1) * limit;
+  
+    const where: any = {};
+  
+    if (query.subjectId) where.subjectId = query.subjectId;
+    if (query.uploaderId) where.uploadedById = query.uploaderId;
+  
+    if (query.search) {
+      where.OR = [
+        { title: { contains: query.search, mode: 'insensitive' } },
+        { description: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+  
+    const [data, total] = await Promise.all([
+      this.prisma.content.findMany({
+        where,
+        include: {
+          subject: true,
+          uploadedBy: true,
+        },
+        skip,
+        take: limit, // now always a number
+        orderBy: { [sortBy]: sortOrder }, // safe computed key
+      }),
+  
+      this.prisma.content.count({ where }),
+    ]);
+  
+    return {
+      data,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+  async getContentsForUsers(
+    query: PaginationQueryDto,
+    extraWhere: any = {},
+  ) {
+    return this.paginationService.paginate(
+      (args) =>
+        this.prisma.content.findMany({
+          ...args,
+          where: { ...args.where, ...extraWhere },
+          include: {
+            subject: true,
+            uploadedBy: true, // مهم للـ mapToContentResponse
+          },
+        }),
+      (args) =>
+        this.prisma.content.count({
+          ...args,
+          where: { ...args.where, ...extraWhere },
+        }),
+      query,
+      extraWhere,
+      ['title', 'description'], // searchable fields
+    );
+  }
+  
+
 }

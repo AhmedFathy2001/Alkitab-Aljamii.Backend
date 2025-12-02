@@ -7,8 +7,9 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Prisma } from '@prisma/client/index-browser';
 import type { User } from '@prisma/client/index-browser';
-import type { PaginatedResult } from '../../common/pagination/pagination.dto.js';
+import type { PaginatedResult, PaginationQueryDto } from '../../common/pagination/pagination.dto.js';
 import type { CreateUserDto } from '../dto/create-user.dto.js';
+import { PaginationService } from '../../common/services/pagination.service.js';
 import type {
   UpdateUserDto,
   UpdatePasswordDto,
@@ -38,6 +39,7 @@ export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly accessService: UserAccessService,
+    private paginationService: PaginationService,
   ) {}
 
   async create(
@@ -317,5 +319,25 @@ export class UserService {
         ...(isSuperAdmin !== undefined ? [{ isSuperAdmin }] : []),
       ],
     };
+  }
+  async getUsers(query: PaginationQueryDto, role?: string) {
+    const extraWhere = role ? { role } : {};
+    return this.paginationService.paginate(
+      (args) =>
+        this.prisma.user.findMany({
+          ...args,
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            facultyCode: true,
+          },
+        }),
+      (args) => this.prisma.user.count(args),
+      query,
+      extraWhere,
+      ['name', 'email'], // searchable fields
+    );
   }
 }
