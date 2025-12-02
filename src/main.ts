@@ -28,6 +28,7 @@ async function bootstrap(): Promise<void> {
       'http://localhost:3000',
       'http://127.0.0.1:3000',
       /^http:\/\/192\.168\.\d+\.\d+:\d+$/, // Allow local network
+      'http://localhost:3001',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

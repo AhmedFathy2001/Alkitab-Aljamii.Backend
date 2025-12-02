@@ -2,6 +2,10 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, FacultyRole, ContentType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import pg from 'pg';
+import * as Minio from 'minio';
+import * as fs from 'fs';
+import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 import 'dotenv/config';
 
 const databaseUrl = process.env['DATABASE_URL'];
@@ -13,6 +17,54 @@ if (!databaseUrl) {
 const pool = new pg.Pool({ connectionString: databaseUrl });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
+
+// MinIO client setup
+const minioClient = new Minio.Client({
+    endPoint: process.env['MINIO_ENDPOINT'] ?? 'localhost',
+    port: parseInt(process.env['MINIO_PORT'] ?? '9000', 10),
+    useSSL: process.env['MINIO_USE_SSL'] === 'true',
+    accessKey: process.env['MINIO_ACCESS_KEY'] ?? 'minioadmin',
+    secretKey: process.env['MINIO_SECRET_KEY'] ?? 'minioadmin',
+});
+const minioBucket = process.env['MINIO_BUCKET_NAME'] ?? 'alkitab-content';
+
+// Helper function to upload file to MinIO
+async function uploadToMinio(localFilePath: string, fileName: string): Promise<{ key: string; size: number }> {
+    const fileBuffer = fs.readFileSync(localFilePath);
+    const fileExtension = fileName.split('.').pop() ?? '';
+    const fileKey = `content/${uuidv4()}.${fileExtension}`;
+
+    await minioClient.putObject(
+        minioBucket,
+        fileKey,
+        fileBuffer,
+        fileBuffer.length,
+        { 'Content-Type': 'application/pdf' }
+    );
+
+    return { key: fileKey, size: fileBuffer.length };
+}
+
+// Ensure MinIO bucket exists
+async function ensureMinioBucket(): Promise<void> {
+    const bucketExists = await minioClient.bucketExists(minioBucket);
+    if (!bucketExists) {
+        await minioClient.makeBucket(minioBucket);
+        console.log(`✅ MinIO bucket created: ${minioBucket}`);
+    } else {
+        console.log(`✅ MinIO bucket exists: ${minioBucket}`);
+    }
+}
+
+// Check if file exists in MinIO
+async function checkMinioFileExists(key: string): Promise<boolean> {
+    try {
+        await minioClient.statObject(minioBucket, key);
+        return true;
+    } catch {
+        return false;
+    }
+}
 
 // ======== Seed Data ========
 
@@ -87,43 +139,43 @@ const subjects = [
     { code: 'PH101', name: 'biology', facultyCode: 'PH' },
 ];
 
-// Contents
+// Contents - fileName refers to the file in prisma/files/ directory
 const contentsData = [
 {
     subjectCode: 'CS101',
     uploadedByEmail: 'mahmud586@gmail.com',
     contents: [
-        { title: 'Data Structures Basics', fileName: 'ds_basics.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/ds_basics.pdf', contentType: ContentType.textbook },
-        { title: 'DS Exercises', fileName: 'ds_exercises.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/ds_exercises.pdf', contentType: ContentType.other },
+        { title: 'Data Structures Basics', fileName: 'ds_basics.pdf', contentType: ContentType.textbook },
+        { title: 'DS Exercises', fileName: 'ds_exercises.pdf', contentType: ContentType.other },
     ],
 },
 {
     subjectCode: 'CS102',
     uploadedByEmail: 'amr185@gmail.com',
     contents: [
-        { title: 'Algorithms Guide', fileName: 'alg_guide.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/alg_guide.pdf', contentType: ContentType.guide },
+        { title: 'Algorithms Guide', fileName: 'alg_guide.pdf', contentType: ContentType.guide },
     ],
 },
 {
     subjectCode: 'SC101',
     uploadedByEmail: 'yasser858@gmail.com',
     contents: [
-        { title: 'Calculus I', fileName: 'calc1.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/calc1.pdf', contentType: ContentType.textbook },
+        { title: 'Calculus I', fileName: 'calc1.pdf', contentType: ContentType.textbook },
     ],
 },
 {
     subjectCode: 'ME102',
     uploadedByEmail: 'Khaled599@gmail.com',
     contents: [
-        { title: 'Anatomy Notes', fileName: 'ant_notes.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/ant_notes.pdf', contentType: ContentType.notes },
+        { title: 'Anatomy Notes', fileName: 'ant_notes.pdf', contentType: ContentType.notes },
     ],
 },
 {
     subjectCode: 'PH101',
     uploadedByEmail: 'Sara683@gmail.com',
     contents: [
-        { title: 'biology Works', fileName: 'biology.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/biology.pdf', contentType: ContentType.textbook },
-        { title: 'Medical Microbiology', fileName: 'Microbiology.pdf', filePath: '/backend/Alkitab-Aljamii.Backend/prisma/files/Microbiology.pdf', contentType: ContentType.reference },
+        { title: 'biology Works', fileName: 'biology.pdf', contentType: ContentType.textbook },
+        { title: 'Medical Microbiology', fileName: 'Microbiology.pdf', contentType: ContentType.reference },
     ],
 },
 ];
@@ -234,6 +286,9 @@ async function seedSubjects() {
 }
 
 async function seedContents() {
+  // Get the directory where seed files are located
+  const seedFilesDir = path.join(__dirname, '..', 'files');
+
   for (const entry of contentsData) {
     const subject = await prisma.subject.findFirst({ where: { code: entry.subjectCode } });
     if (!subject) continue;
@@ -245,7 +300,40 @@ async function seedContents() {
       const existing = await prisma.content.findFirst({
         where: { subjectId: subject.id, title: content.title, uploadedById: uploader.id },
       });
-      if (!existing) {
+
+      // Build the local file path
+      const localFilePath = path.join(seedFilesDir, content.fileName);
+
+      // Check if the file exists locally
+      if (!fs.existsSync(localFilePath)) {
+        console.log(`⚠️ File not found: ${localFilePath}, skipping ${content.title}`);
+        continue;
+      }
+
+      if (existing) {
+        // Check if file exists in MinIO, re-upload if missing
+        const fileExistsInMinio = await checkMinioFileExists(existing.filePath);
+        if (!fileExistsInMinio) {
+          const { key: minioKey, size: fileSize } = await uploadToMinio(localFilePath, content.fileName);
+          console.log(`📤 Re-uploaded to MinIO: ${content.fileName} -> ${minioKey}`);
+
+          // Update the database record with new MinIO key
+          await prisma.content.update({
+            where: { id: existing.id },
+            data: {
+              filePath: minioKey,
+              fileSize: BigInt(fileSize),
+            },
+          });
+          console.log(`🔄 Content updated: ${content.title}`);
+        } else {
+          console.log(`⏭️ Content already exists: ${content.title}`);
+        }
+      } else {
+        // Upload to MinIO and get the key
+        const { key: minioKey, size: fileSize } = await uploadToMinio(localFilePath, content.fileName);
+        console.log(`📤 Uploaded to MinIO: ${content.fileName} -> ${minioKey}`);
+
         await prisma.content.create({
           data: {
             subjectId: subject.id,
@@ -253,10 +341,10 @@ async function seedContents() {
             title: content.title,
             description: content.title + " description",
             fileName: content.fileName,
-            filePath: content.filePath,
+            filePath: minioKey,
             mimeType: 'application/pdf',
             contentType: content.contentType,
-            fileSize: 1000000n,
+            fileSize: BigInt(fileSize),
             pageCount: 100,
           },
         });
@@ -317,6 +405,7 @@ async function seedStaticAssignments() {
 async function seedAll() {
   try {
     console.log('🌱 Starting realistic full database seed...\n');
+    await ensureMinioBucket();
     await seedSuperAdmin();
     await seedFaculties();
     await seedUsers();
