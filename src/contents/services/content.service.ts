@@ -17,7 +17,7 @@ import {
 } from '../utils/content-mapper.js';
 import { I18nService } from 'nestjs-i18n';
 import { PaginationService } from '../../common/services/pagination.service.js';
-import { PaginationQueryDto } from '@/common/index.js';
+import { PaginationQueryDto } from '../../common/pagination/pagination.dto.js';
 
 type UploadedFileType = {
   fieldname: string;

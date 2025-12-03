@@ -4,10 +4,11 @@ import { FacultyMembersController } from './controllers/faculty-members.controll
 import { FacultyService } from './services/faculty.service.js';
 import { FacultyMembersService } from './services/faculty-members.service.js';
 import { FacultyAccessService } from './services/faculty-access.service.js';
+import { PaginationService } from '../common/services/pagination.service.js';
 
 @Module({
   controllers: [FacultyController, FacultyMembersController],
-  providers: [FacultyService, FacultyMembersService, FacultyAccessService],
+  providers: [FacultyService, FacultyMembersService, FacultyAccessService, PaginationService],
   exports: [FacultyService, FacultyMembersService],
 })
 export class FacultiesModule {}

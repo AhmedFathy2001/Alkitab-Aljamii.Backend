@@ -26,27 +26,25 @@ export interface ContentWithRelations {
 export function mapToContentResponse(
   content: ContentWithRelations,
 ): ContentResponseDto {
-  const dto = new ContentResponseDto(); // constructor فارغ
-
-  dto.id = content.id;
-  dto.title = content.title;
-  dto.titleAr = content.titleAr ?? '';
-  dto.description = content.description ?? '';
-  dto.descriptionAr = content.descriptionAr ?? '';
-  dto.filePath = content.filePath;
-  dto.fileName = content.fileName;
-  dto.mimeType = content.mimeType;
-  dto.contentType = content.contentType;
-  dto.fileSize = Number(content.fileSize);
-  dto.status = content.status as 'pending' | 'approved' | 'rejected';
-  dto.approvedById = content.approvedById;
-  dto.subjectId = content.subjectId;
-  dto.subjectName = content.subject.name;
-  dto.subjectNameAr = content.subject.nameAr ?? '';
-  dto.uploadedById = content.uploadedById;
-  dto.uploadedByName = `${content.uploadedBy.firstName} ${content.uploadedBy.lastName}`;
-  dto.createdAt = content.createdAt;
-  dto.updatedAt = content.updatedAt;
-
-  return dto;
+  return {
+    id: content.id,
+    title: content.title,
+    titleAr: content.titleAr ?? '',
+    description: content.description ?? '',
+    descriptionAr: content.descriptionAr ?? '',
+    filePath: content.filePath,
+    fileName: content.fileName,
+    mimeType: content.mimeType,
+    contentType: content.contentType,
+    fileSize: Number(content.fileSize),
+    status: content.status as 'pending' | 'approved' | 'rejected',
+    approvedById: content.approvedById,
+    subjectId: content.subjectId,
+    subjectName: content.subject.name,
+    subjectNameAr: content.subject.nameAr ?? '',
+    uploadedById: content.uploadedById,
+    uploadedByName: `${content.uploadedBy.firstName} ${content.uploadedBy.lastName}`,
+    createdAt: content.createdAt,
+    updatedAt: content.updatedAt,
+  };
 }

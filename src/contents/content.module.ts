@@ -10,6 +10,7 @@ import { PdfPagesService } from './services/pdf-pages.service.js';
 import { PdfValidationService } from './services/pdf-validation.service.js';
 import { ContentAccessService } from './services/content-access.service.js';
 import { PermissionService } from '../common/services/permission.service.js';
+import { PaginationService } from '../common/services/pagination.service.js';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PermissionService } from '../common/services/permission.service.js';
     PdfValidationService,
     ContentAccessService,
     PermissionService,
+    PaginationService,
   ],
   exports: [PdfWatermarkService, PdfPagesService, ContentAccessService],
 })

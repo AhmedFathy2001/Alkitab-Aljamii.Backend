@@ -35,7 +35,7 @@ import {
   UserResponseDto,
   PaginatedUserResponseDto,
 } from '../dto/user-response.dto.js';
-import { SortOrder } from '@/common/index.js';
+import { SortOrder } from '../../common/pagination/pagination.dto.js';
 
 @ApiTags('Users')
 @ApiBearerAuth()
