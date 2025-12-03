@@ -47,12 +47,12 @@ export class SubjectService {
     query: QuerySubjectDto,
     user: JwtPayload,
   ): Promise<PaginatedResult<SubjectResponseDto>> {
-    const { page = 1, limit = 10, facultyId, search, isActive } = query;
+    const { page = 1, limit = 10, facultyName, search, isActive } = query;
     const skip = (page - 1) * limit;
 
     const where = await this.buildWhereClause(
       user,
-      facultyId,
+      facultyName,
       search,
       isActive,
     );
@@ -278,8 +278,8 @@ export class SubjectService {
 
     return where;
   }
-  async getSubjects(query: PaginationQueryDto, facultyCode?: string) {
-    const extraWhere = facultyCode ? { facultyCode } : {};
+  async getSubjects(query: PaginationQueryDto, facultyName?: string) {
+    const extraWhere = facultyName ? { facultyName } : {};
     return this.paginationService.paginate(
       (args) => this.prisma.subject.findMany(args),
       (args) => this.prisma.subject.count(args),

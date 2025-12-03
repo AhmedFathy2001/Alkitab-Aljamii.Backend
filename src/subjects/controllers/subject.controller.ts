@@ -142,7 +142,7 @@ async getSubjects(
   @Query('limit') limit?: number,
   @Query('sortBy') sortBy?: string,
   @Query('sortOrder') sortOrder?: SortOrder,
-  @Query('facultyCode') facultyCode?: string,
+  @Query('facultyName') facultyName?: string,
 ) {
   return this.subjectService.getSubjects(
     {
@@ -151,7 +151,7 @@ async getSubjects(
       sortBy: sortBy ?? 'createdAt',
       sortOrder: sortOrder ?? SortOrder.DESC, // استخدم enum بدل string
     },
-    facultyCode,
+    facultyName,
   );
 }
 }
